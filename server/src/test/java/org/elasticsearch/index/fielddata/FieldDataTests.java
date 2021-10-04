@@ -152,7 +152,7 @@ public class FieldDataTests extends ESTestCase {
 
     public void testReplaceMissingLongs() throws IOException {
         final NumericDocValues values = asNumericDocValues(null, 3L, 2L, null, 5L, null);
-        final NumericDocValues replaced = FieldData.replaceMissing(values, 4);
+        final NumericDocValues replaced = FieldData.replaceMissing(values, 4L);
 
         assertTrue(replaced.advanceExact(0));
         assertEquals(4L, replaced.longValue());
