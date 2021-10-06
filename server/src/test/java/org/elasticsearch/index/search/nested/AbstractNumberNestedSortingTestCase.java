@@ -9,6 +9,9 @@ package org.elasticsearch.index.search.nested;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.NumericDocValuesField;
+import org.apache.lucene.document.SortedDocValuesField;
+import org.apache.lucene.document.SortedNumericDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexableField;
@@ -25,12 +28,15 @@ import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.join.QueryBitSetProducer;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.NumericUtils;
 import org.elasticsearch.common.lucene.index.ElasticsearchDirectoryReader;
 import org.elasticsearch.common.lucene.search.Queries;
 import org.elasticsearch.index.fielddata.AbstractFieldDataTestCase;
 import org.elasticsearch.index.fielddata.IndexFieldData;
 import org.elasticsearch.index.fielddata.IndexFieldData.XFieldComparatorSource;
 import org.elasticsearch.index.fielddata.IndexFieldData.XFieldComparatorSource.Nested;
+import org.elasticsearch.index.fielddata.fieldcomparator.LongValuesComparatorSource;
 import org.elasticsearch.index.shard.ShardId;
 import org.elasticsearch.search.MultiValueMode;
 
@@ -204,6 +210,22 @@ public abstract class AbstractNumberNestedSortingTestCase extends AbstractFieldD
         document.add(new StringField("fieldXXX", "x", Field.Store.NO));
         writer.addDocument(document);
 
+        docs.clear();
+        document = new Document();
+        document.add(createLongField("long_m", 7L));
+        document.add(new StringField("filter_1", "T", Field.Store.NO));
+        docs.add(document);
+        document = new Document();
+        document.add(createLongField("long_m", Long.MAX_VALUE));
+        document.add(new StringField("filter_1", "T", Field.Store.NO));
+        docs.add(document);
+        document = new Document();
+        document.add(createLongField("long_m", 56L));
+        document.add(new StringField("filter_1", "T", Field.Store.NO));
+        docs.add(document);
+        writer.addDocuments(docs);
+        writer.commit();
+
         MultiValueMode sortMode = MultiValueMode.SUM;
         DirectoryReader directoryReader = DirectoryReader.open(writer);
         directoryReader = ElasticsearchDirectoryReader.wrap(directoryReader, new ShardId(indexService.index(), 0));
@@ -351,4 +373,8 @@ public abstract class AbstractNumberNestedSortingTestCase extends AbstractFieldD
     protected abstract IndexFieldData.XFieldComparatorSource createFieldComparator(String fieldName, MultiValueMode sortMode,
                                                                                         Object missingValue, Nested nested);
 
+
+    protected IndexableField createLongField(String name, Long value)  {
+        return new NumericDocValuesField(name, value);
+    }
 }
