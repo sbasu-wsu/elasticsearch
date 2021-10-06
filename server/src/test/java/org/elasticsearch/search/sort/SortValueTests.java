@@ -113,6 +113,14 @@ public class SortValueTests extends AbstractNamedWriteableTestCase<SortValue> {
         assertThat(SortValue.from(r), greaterThan(SortValue.from(r - 1)));
     }
 
+    public void testCompareNull() {
+        long rMax = Long.MAX_VALUE;
+        long rMin = Long.MIN_VALUE;
+//        long rNull = Long.parseLong(null);
+        assertThat(SortValue.from(new BytesRef()), lessThan(SortValue.from(rMax)));
+        assertThat(SortValue.from(new BytesRef()), greaterThan(SortValue.from(rMin)));
+    }
+
     public void testBytes() {
         String r = randomAlphaOfLength(5);
         assertThat(SortValue.from(new BytesRef(r)), equalTo(SortValue.from(new BytesRef(r))));

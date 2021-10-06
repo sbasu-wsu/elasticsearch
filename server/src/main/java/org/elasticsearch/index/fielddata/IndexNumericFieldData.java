@@ -84,7 +84,6 @@ public abstract class IndexNumericFieldData implements IndexFieldData<LeafNumeri
         boolean reverse
     ) {
         XFieldComparatorSource source = comparatorSource(targetNumericType, missingValue, sortMode, nested);
-
         /*
          * Use a SortField with the custom comparator logic if required because
          * 1. The underlying data source needs it.
@@ -92,7 +91,8 @@ public abstract class IndexNumericFieldData implements IndexFieldData<LeafNumeri
          * 3. We Aren't using max or min to resolve the duplicates.
          * 4. We have to cast the results to another type.
          */
-        if (sortRequiresCustomComparator()
+//        if (sortRequiresCustomComparator()
+        if(true
                 || nested != null
                 || (sortMode != MultiValueMode.MAX && sortMode != MultiValueMode.MIN)
                 || targetNumericType != getNumericType()) {
@@ -103,6 +103,7 @@ public abstract class IndexNumericFieldData implements IndexFieldData<LeafNumeri
             SortedNumericSelector.Type.MAX : SortedNumericSelector.Type.MIN;
         SortField sortField = new SortedNumericSortField(getFieldName(), getNumericType().sortFieldType, reverse, selectorType);
         sortField.setMissingValue(source.missingObject(missingValue, reverse));
+
         return sortField;
     }
 
