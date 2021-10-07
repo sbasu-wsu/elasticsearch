@@ -36,7 +36,7 @@ import static org.elasticsearch.common.settings.Settings.Builder.EMPTY_SETTINGS;
 /**
  * Request for an update index settings action
  */
-public class UpdateSettingsRequest extends AcknowledgedRequest<UpdateSettingsRequest>
+public class UqpdateSettingsRequest extends AcknowledgedRequest<UpdateSettingsRequest>
         implements IndicesRequest.Replaceable, ToXContentObject {
 
     private String[] indices;

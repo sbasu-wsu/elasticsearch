@@ -86,6 +86,13 @@ export HOSTNAME=$HOSTNAME
 
 @source.path.env@
 
+# user can set the ES_TMPDIR env var, else code sets the usual /tmp directory as temp directory
+if [ -z "$ES_TMPDIR" ]; then
+  ES_TMPDIR=`"$JAVA" "$XSHARE" -cp "$ES_CLASSPATH" org.elasticsearch.tools.launchers.TempDirectory`
+fi
+export ES_TMPDIR=$ES_TMPDIR
+echo ES_TMPDIR=$ES_TMPDIR
+
 if [ -z "$ES_PATH_CONF" ]; then
   echo "ES_PATH_CONF must be set to the configuration path"
   exit 1
