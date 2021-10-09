@@ -10,6 +10,7 @@ package org.elasticsearch.action.admin.indices.settings.put;
 
 import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.common.io.stream.Writeable;
+import org.elasticsearch.common.settings.SecureSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.Settings.Builder;
 import org.elasticsearch.core.TimeValue;
@@ -19,8 +20,10 @@ import org.elasticsearch.test.ESTestCase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
@@ -62,6 +65,24 @@ public class UpdateSettingsRequestSerializationTests extends AbstractWireSeriali
         request.timeout(randomTimeValue());
         request.indicesOptions(IndicesOptions.fromOptions(randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean()));
         request.setPreserveExisting(randomBoolean());
+        return request;
+    }
+
+    public static UpdateSettingsRequest createTestItemWithSettings()
+    {
+        Map<String, Object> settings = new HashMap<>();
+        settings.put("number_of_replicas","3");
+        settings.put("settings.type","randomtext");
+
+        Settings requestSetting = new Settings(settings, null);
+
+        UpdateSettingsRequest request = new UpdateSettingsRequest(requestSetting);
+        request.masterNodeTimeout(randomTimeValue());
+        request.timeout(randomTimeValue());
+        request.indicesOptions(IndicesOptions.fromOptions(randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean()));
+        request.setPreserveExisting(randomBoolean());
+
+
         return request;
     }
 

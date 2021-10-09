@@ -8,6 +8,7 @@
 
 package org.elasticsearch.action.admin.indices.settings.put;
 
+import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.test.AbstractXContentTestCase;
@@ -35,6 +36,21 @@ public class UpdateSettingsRequestTests extends AbstractXContentTestCase<UpdateS
             };
             return requestWithEnclosingSettings;
         }
+        return testRequest;
+    }
+
+    protected UpdateSettingsRequest createTestInstanceWithSettings() {
+        UpdateSettingsRequest testRequest = UpdateSettingsRequestSerializationTests.createTestItemWithSettings();
+        UpdateSettingsRequest request = new UpdateSettingsRequest(testRequest.settings()) {
+            public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
+                builder.startObject();
+                builder.startObject("settings");
+                this.settings().toXContent(builder, params);
+                builder.endObject();
+                builder.endObject();
+                return builder;
+            }
+        };
         return testRequest;
     }
 

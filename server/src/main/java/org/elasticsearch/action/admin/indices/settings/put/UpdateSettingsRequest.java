@@ -36,7 +36,7 @@ import static org.elasticsearch.common.settings.Settings.Builder.EMPTY_SETTINGS;
 /**
  * Request for an update index settings action
  */
-public class UqpdateSettingsRequest extends AcknowledgedRequest<UpdateSettingsRequest>
+public class UpdateSettingsRequest extends AcknowledgedRequest<UpdateSettingsRequest>
         implements IndicesRequest.Replaceable, ToXContentObject {
 
     private String[] indices;
@@ -197,7 +197,7 @@ public class UqpdateSettingsRequest extends AcknowledgedRequest<UpdateSettingsRe
     public UpdateSettingsRequest fromXContent(XContentParser parser) throws IOException {
         Map<String, Object> settings = new HashMap<>();
         Map<String, Object> bodySettings = parser.map();
-        Object innerBodySettings = bodySettings.get("settings");
+        Object innerBodySettings = bodySettings;
         // clean up in case the body is wrapped with "settings" : { ... }
         if (innerBodySettings instanceof Map) {
             @SuppressWarnings("unchecked")

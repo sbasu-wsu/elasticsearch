@@ -114,4 +114,16 @@ public class MultiSearchResponseTests extends AbstractXContentTestCase<MultiSear
                 this::assertEqualInstances, assertToXContentEquivalence, ToXContent.EMPTY_PARAMS);
     }
 
+    public void testFromXContentWithSettings() throws IOException {
+        Supplier<MultiSearchResponse> instanceSupplier = MultiSearchResponseTests::createTestInstanceWithFailures;
+        //with random fields insertion in the inner exceptions, some random stuff may be parsed back as metadata,
+        //but that does not bother our assertions, as we only want to test that we don't break.
+        boolean supportsUnknownFields = true;
+        //exceptions are not of the same type whenever parsed back
+        boolean assertToXContentEquivalence = false;
+        AbstractXContentTestCase.testFromXContent(NUMBER_OF_TEST_RUNS, instanceSupplier, supportsUnknownFields, Strings.EMPTY_ARRAY,
+            getRandomFieldsExcludeFilterWhenResultHasErrors(), this::createParser, this::doParseInstance,
+            this::assertEqualInstances, assertToXContentEquivalence, ToXContent.EMPTY_PARAMS);
+    }
+
 }
