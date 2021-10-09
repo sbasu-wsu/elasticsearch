@@ -195,12 +195,20 @@ public abstract class AbstractXContentTestCase<T extends ToXContent> extends EST
                 assertToXContentEquivalence(), getToXContentParams());
     }
 
+    public final void testFromXContentWithSettings() throws IOException {
+        testFromXContent(NUMBER_OF_TEST_RUNS, this::createTestInstanceWithSettings, supportsUnknownFields(), getShuffleFieldsExceptions(),
+            getRandomFieldsExcludeFilter(), this::createParser, this::parseInstance, this::assertEqualInstances,
+            assertToXContentEquivalence(), getToXContentParams());
+    }
+
     /**
      * Creates a random test instance to use in the tests. This method will be
      * called multiple times during test execution and should return a different
      * random instance each time it is called.
      */
     protected abstract T createTestInstance();
+
+    protected abstract T createTestInstanceWithSettings();
 
     private T parseInstance(XContentParser parser) throws IOException {
         T parsedInstance = doParseInstance(parser);
