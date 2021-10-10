@@ -87,7 +87,7 @@ public final class Settings implements ToXContentFragment {
      */
     private final SetOnce<Set<String>> keys = new SetOnce<>();
 
-    private Settings(Map<String, Object> settings, SecureSettings secureSettings) {
+    public Settings(Map<String, Object> settings, SecureSettings secureSettings) {
         // we use a sorted map for consistent serialization when using getAsMap()
         this.settings = Collections.unmodifiableSortedMap(new TreeMap<>(settings));
         this.secureSettings = secureSettings;

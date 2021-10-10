@@ -197,7 +197,7 @@ public class UpdateSettingsRequest extends AcknowledgedRequest<UpdateSettingsReq
     public UpdateSettingsRequest fromXContent(XContentParser parser) throws IOException {
         Map<String, Object> settings = new HashMap<>();
         Map<String, Object> bodySettings = parser.map();
-        Object innerBodySettings = bodySettings.get("settings");
+        Object innerBodySettings = bodySettings;
         // clean up in case the body is wrapped with "settings" : { ... }
         if (innerBodySettings instanceof Map) {
             @SuppressWarnings("unchecked")

@@ -66,4 +66,26 @@ public class RestPutIndexTemplateActionTests extends ESTestCase {
         action.prepareRequest(request, mock(NodeClient.class));
         assertWarnings(RestPutIndexTemplateAction.TYPES_DEPRECATION_MESSAGE);
     }
+
+    public void testGetSettingsFromXContent() throws IOException {
+        XContentBuilder typedContent = XContentFactory.jsonBuilder().startObject()
+            .startObject("mappings")
+            .startObject("properties")
+            .startObject("settings").field("type", "keyword").endObject()
+            .endObject()
+            .endObject()
+            .endObject();
+
+        Map<String, String> params = new HashMap<>();
+        params.put(INCLUDE_TYPE_NAME_PARAMETER, "true");
+        RestRequest request = new FakeRestRequest.Builder(xContentRegistry())
+            .withHeaders(Map.of("Content-Type", contentTypeHeader, "Accept", contentTypeHeader))
+            .withMethod(RestRequest.Method.PUT)
+            .withParams(params)
+            .withPath("/_template/_some_template")
+            .withContent(BytesReference.bytes(typedContent), null)
+            .build();
+        action.prepareRequest(request, mock(NodeClient.class));
+        assertWarnings(RestPutIndexTemplateAction.TYPES_DEPRECATION_MESSAGE);
+    }
 }
