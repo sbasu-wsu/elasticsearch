@@ -8,8 +8,12 @@
 
 package org.elasticsearch.test;
 
+import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
+import org.elasticsearch.action.support.IndicesOptions;
+import org.elasticsearch.action.support.master.AcknowledgedRequest;
 import org.elasticsearch.common.CheckedBiConsumer;
 import org.elasticsearch.common.CheckedBiFunction;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.core.CheckedFunction;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.bytes.BytesReference;
@@ -22,6 +26,8 @@ import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -195,12 +201,6 @@ public abstract class AbstractXContentTestCase<T extends ToXContent> extends EST
                 assertToXContentEquivalence(), getToXContentParams());
     }
 
-    public final void testFromXContentWithSettings() throws IOException {
-        testFromXContent(NUMBER_OF_TEST_RUNS, this::createTestInstanceWithSettings, supportsUnknownFields(), getShuffleFieldsExceptions(),
-            getRandomFieldsExcludeFilter(), this::createParser, this::parseInstance, this::assertEqualInstances,
-            assertToXContentEquivalence(), getToXContentParams());
-    }
-
     /**
      * Creates a random test instance to use in the tests. This method will be
      * called multiple times during test execution and should return a different
@@ -208,7 +208,38 @@ public abstract class AbstractXContentTestCase<T extends ToXContent> extends EST
      */
     protected abstract T createTestInstance();
 
-    protected abstract T createTestInstanceWithSettings();
+    protected AcknowledgedRequest<UpdateSettingsRequest> createTestInstanceWithSettings() {
+            UpdateSettingsRequest testRequest = createTestItemWithSettings();
+            UpdateSettingsRequest request = new UpdateSettingsRequest(testRequest.settings()) {
+                public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
+                    builder.startObject();
+                    builder.startObject("settings");
+                    this.settings().toXContent(builder, params);
+                    builder.endObject();
+                    builder.endObject();
+                    return builder;
+                }
+            };
+            return testRequest;
+    }
+
+    private static UpdateSettingsRequest createTestItemWithSettings()
+    {
+        Map<String, Object> settings = new HashMap<>();
+        settings.put("number_of_replicas","3");
+        settings.put("settings.type","randomtext");
+
+        Settings requestSetting = new Settings(settings, null);
+
+        UpdateSettingsRequest request = new UpdateSettingsRequest(requestSetting);
+        request.masterNodeTimeout(randomTimeValue());
+        request.timeout(randomTimeValue());
+        request.indicesOptions(IndicesOptions.fromOptions(randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean()));
+        request.setPreserveExisting(randomBoolean());
+
+
+        return request;
+    }
 
     private T parseInstance(XContentParser parser) throws IOException {
         T parsedInstance = doParseInstance(parser);
