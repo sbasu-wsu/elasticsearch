@@ -19,7 +19,6 @@ import org.elasticsearch.common.geo.GeoPoint;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Utility methods, similar to Lucene's {@link DocValues}.
@@ -519,10 +518,10 @@ public enum FieldData {
      * document, returns the same value as {@code values} if there is a value
      * for the current document and {@code missing} otherwise.
      */
-    public static NumericDocValues replaceMissing(NumericDocValues values, Long missing) {
+    public static NumericDocValues replaceMissing(NumericDocValues values, long missing) {
         return new AbstractNumericDocValues() {
 
-            private Long value;
+            private long value;
 
             @Override
             public int docID() {
@@ -533,8 +532,7 @@ public enum FieldData {
             public boolean advanceExact(int target) throws IOException {
                 if (values.advanceExact(target)) {
                     value = values.longValue();
-                }
-                else {
+                } else {
                     value = missing;
                 }
                 return true;

@@ -14,6 +14,7 @@ import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.FieldComparator;
 import org.apache.lucene.search.LeafFieldComparator;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.comparators.LongComparator;
 import org.apache.lucene.util.BitSet;
 import org.elasticsearch.common.time.DateUtils;
 import org.elasticsearch.common.util.BigArrays;
@@ -40,7 +41,6 @@ public class LongValuesComparatorSource extends IndexFieldData.XFieldComparatorS
     private final IndexNumericFieldData indexFieldData;
     private final Function<SortedNumericDocValues, SortedNumericDocValues> converter;
     private final NumericType targetNumericType;
-    private final Object missingValue;
 
     public LongValuesComparatorSource(IndexNumericFieldData indexFieldData, @Nullable Object missingValue,
                                       MultiValueMode sortMode, Nested nested, NumericType targetNumericType) {
@@ -54,8 +54,6 @@ public class LongValuesComparatorSource extends IndexFieldData.XFieldComparatorS
         this.indexFieldData = indexFieldData;
         this.converter = converter;
         this.targetNumericType = targetNumericType;
-        this.missingValue = missingValue;
-
     }
 
     @Override
@@ -74,28 +72,25 @@ public class LongValuesComparatorSource extends IndexFieldData.XFieldComparatorS
         return converter != null ? converter.apply(values) : values;
     }
 
-    private NumericDocValues getNumericDocValues(LeafReaderContext context, Long missingValue) throws IOException {
+    private NumericDocValues getNumericDocValues(LeafReaderContext context, long missingValue) throws IOException {
         final SortedNumericDocValues values = loadDocValues(context);
-        // if we dont replace missing and just use values ........
         if (nested == null) {
-            return FieldData.replaceMissing(sortMode.select(values), null);
+            return FieldData.replaceMissing(sortMode.select(values), missingValue);
         }
         final BitSet rootDocs = nested.rootDocs(context);
         final DocIdSetIterator innerDocs = nested.innerDocs(context);
-
         final int maxChildren = nested.getNestedSort() != null ? nested.getNestedSort().getMaxChildren() : Integer.MAX_VALUE;
-
         return sortMode.select(values, missingValue, rootDocs, innerDocs, context.reader().maxDoc(), maxChildren);
     }
 
     @Override
     public FieldComparator<?> newComparator(String fieldname, int numHits, int sortPos, boolean reversed) {
         assert indexFieldData == null || fieldname.equals(indexFieldData.getFieldName());
-        final long lMissingValue = (Long) missingObject(missingValue, reversed);
 
+        final long lMissingValue = (Long) missingObject(missingValue, reversed);
         // NOTE: it's important to pass null as a missing value in the constructor so that
         // the comparator doesn't check docsWithField since we replace missing values in select()
-        return new LongComparator(numHits, null, null, reversed, sortPos, missingValue == null ? "" : missingValue.toString()) {
+        return new LongComparator(numHits, null, null, reversed, sortPos) {
             @Override
             public LeafFieldComparator getLeafComparator(LeafReaderContext context) throws IOException {
                 return new LongLeafComparator(context) {
@@ -112,7 +107,6 @@ public class LongValuesComparatorSource extends IndexFieldData.XFieldComparatorS
     public BucketedSort newBucketedSort(BigArrays bigArrays, SortOrder sortOrder, DocValueFormat format,
             int bucketSize, BucketedSort.ExtraData extra) {
         return new BucketedSort.ForLongs(bigArrays, sortOrder, format, bucketSize, extra) {
-
             private final long lMissingValue = (Long) missingObject(missingValue, sortOrder == SortOrder.DESC);
 
             @Override
