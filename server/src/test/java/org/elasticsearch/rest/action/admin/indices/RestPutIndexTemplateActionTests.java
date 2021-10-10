@@ -70,11 +70,8 @@ public class RestPutIndexTemplateActionTests extends ESTestCase {
     public void testGetSettingsFromXContent() throws IOException {
         XContentBuilder typedContent = XContentFactory.jsonBuilder().startObject()
             .startObject("mappings")
-            .startObject("my_doc")
             .startObject("properties")
             .startObject("settings").field("type", "keyword").endObject()
-            .endObject()
-            .endObject()
             .endObject()
             .endObject()
             .endObject();
