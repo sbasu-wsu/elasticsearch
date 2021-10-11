@@ -100,6 +100,13 @@ a sort on an existing index. Index sorting also has a cost in terms of indexing 
 documents must be sorted at flush and merge time. You should test the impact on your application
 before activating this feature.
 
+[Note]
+As of version 7.15, there is a known issue that items with null values collide with Long.MIN/MAX_VALUE when sorting.
+for instance, if the index have items which are null and item(s) which have value Long.MAX and missing_value=_last
+in the search body, the results are not always sorted with the item having null value as last.
+sbasu-wsu/elasticsearch repository have a patch commit, pending approval to fix the issue, and then items having null
+values will be sorted correctly as the _last or _first item as per the request parameter.
+
 [discrete]
 [[early-terminate]]
 === Early termination of search request

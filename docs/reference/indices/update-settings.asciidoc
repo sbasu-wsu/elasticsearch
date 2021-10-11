@@ -93,6 +93,25 @@ indices can be found in <<index-modules>>.
 To preserve existing settings from being updated, the `preserve_existing`
 request parameter can be set to `true`.
 
+====== Note:
+When the update request body has a field named 'settings', all the fields are
+parsed with no special handling for the 'settings' field.
+In the below example, the settings properties parsed are : field1, field2 and
+settings.field3 ( this throws during validation )
+
+[source,console]
+--------------------------------------------------
+PUT /my-index-000001/_settings
+{
+  "field1" : "value1",
+  "field2" : "value2",
+  "settings" :
+  {
+    "field3" : "value3"
+  }
+}
+--------------------------------------------------
+
 [[bulk]]
 ===== Bulk indexing usage
 
