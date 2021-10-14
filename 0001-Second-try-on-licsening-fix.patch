@@ -1,0 +1,267 @@
+From c06d94744bff9c066675fe7c0aaadd883acdc0ea Mon Sep 17 00:00:00 2001
+From: Ryan Lodermeier <rlodermeier@gmail.com>
+Date: Wed, 13 Oct 2021 17:04:48 -0700
+Subject: [PATCH] Second try on licsening fix
+
+---
+ .../org/elasticsearch/search/geo/GeoPointScriptDocValuesIT.java  | 7 -------
+ .../java/org/elasticsearch/rest/RestCompatibleVersionHelper.java | 8 --------
+ .../java/org/elasticsearch/shutdown/PluginShutdownService.java   | 8 --------
+ server/src/main/java/org/elasticsearch/usage/UsageService.java   | 8 --------
+ .../ccr/allocation/CcrPrimaryFollowerAllocationDecider.java      | 8 --------
+ .../ccr/allocation/CcrPrimaryFollowerAllocationDeciderTests.java | 8 --------
+ .../xpack/cluster/action/MigrateToDataTiersAction.java           | 9 ---------
+ .../core/security/authz/accesscontrol/MatchAllRoleBitSet.java    | 9 ---------
+ .../BaseSearchableSnapshotsIntegTestCase.java                    | 8 --------
+ .../SearchableSnapshotsLicenseIntegTests.java                    | 8 --------
+ .../xpack/spatial/search/GeoShapeScriptDocValuesIT.java          | 7 -------
+ .../xpack/spatial/search/GeoShapeWithDocValuesQueryTests.java    | 7 -------
+ .../index/mapper/GeoShapeWithDocValuesFieldMapperTests.java      | 7 -------
+ .../xpack/spatial/SpatialClientYamlTestSuiteIT.java              | 7 -------
+ 14 files changed, 109 deletions(-)
+
+diff --git a/server/src/internalClusterTest/java/org/elasticsearch/search/geo/GeoPointScriptDocValuesIT.java b/server/src/internalClusterTest/java/org/elasticsearch/search/geo/GeoPointScriptDocValuesIT.java
+index 8bff25ae2a0..fd5964f84e4 100644
+--- a/server/src/internalClusterTest/java/org/elasticsearch/search/geo/GeoPointScriptDocValuesIT.java
++++ b/server/src/internalClusterTest/java/org/elasticsearch/search/geo/GeoPointScriptDocValuesIT.java
+@@ -1,10 +1,3 @@
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0; you may not use this file except in compliance with the Elastic License
+- * 2.0.
+- */
+-
+ /*
+  * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+  * or more contributor license agreements. Licensed under the Elastic License
+diff --git a/server/src/main/java/org/elasticsearch/rest/RestCompatibleVersionHelper.java b/server/src/main/java/org/elasticsearch/rest/RestCompatibleVersionHelper.java
+index 2e0e8d61b83..6ce270978bb 100644
+--- a/server/src/main/java/org/elasticsearch/rest/RestCompatibleVersionHelper.java
++++ b/server/src/main/java/org/elasticsearch/rest/RestCompatibleVersionHelper.java
+@@ -1,11 +1,3 @@
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0 and the Server Side Public License, v 1; you may not use this file except
+- * in compliance with, at your election, the Elastic License 2.0 or the Server
+- * Side Public License, v 1.
+- */
+-
+ /*
+  * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+  * or more contributor license agreements. Licensed under the Elastic License
+diff --git a/server/src/main/java/org/elasticsearch/shutdown/PluginShutdownService.java b/server/src/main/java/org/elasticsearch/shutdown/PluginShutdownService.java
+index 894af78108d..0dbae3c9b14 100644
+--- a/server/src/main/java/org/elasticsearch/shutdown/PluginShutdownService.java
++++ b/server/src/main/java/org/elasticsearch/shutdown/PluginShutdownService.java
+@@ -1,11 +1,3 @@
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0 and the Server Side Public License, v 1; you may not use this file except
+- * in compliance with, at your election, the Elastic License 2.0 or the Server
+- * Side Public License, v 1.
+- */
+-
+ /*
+  * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+  * or more contributor license agreements. Licensed under the Elastic License
+diff --git a/server/src/main/java/org/elasticsearch/usage/UsageService.java b/server/src/main/java/org/elasticsearch/usage/UsageService.java
+index 19d0c2dee43..3b1d203e16d 100644
+--- a/server/src/main/java/org/elasticsearch/usage/UsageService.java
++++ b/server/src/main/java/org/elasticsearch/usage/UsageService.java
+@@ -6,14 +6,6 @@
+  * Side Public License, v 1.
+  */
+ 
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0 and the Server Side Public License, v 1; you may not use this file except
+- * in compliance with, at your election, the Elastic License 2.0 or the Server
+- * Side Public License, v 1.
+- */
+-
+ package org.elasticsearch.usage;
+ 
+ import org.elasticsearch.action.admin.cluster.node.usage.NodeUsage;
+diff --git a/x-pack/plugin/ccr/src/main/java/org/elasticsearch/xpack/ccr/allocation/CcrPrimaryFollowerAllocationDecider.java b/x-pack/plugin/ccr/src/main/java/org/elasticsearch/xpack/ccr/allocation/CcrPrimaryFollowerAllocationDecider.java
+index 002ea9ec689..b069dd6208c 100644
+--- a/x-pack/plugin/ccr/src/main/java/org/elasticsearch/xpack/ccr/allocation/CcrPrimaryFollowerAllocationDecider.java
++++ b/x-pack/plugin/ccr/src/main/java/org/elasticsearch/xpack/ccr/allocation/CcrPrimaryFollowerAllocationDecider.java
+@@ -5,14 +5,6 @@
+  * 2.0.
+  */
+ 
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0 and the Server Side Public License, v 1; you may not use this file except
+- * in compliance with, at your election, the Elastic License 2.0 or the Server
+- * Side Public License, v 1.
+- */
+-
+ package org.elasticsearch.xpack.ccr.allocation;
+ 
+ import org.elasticsearch.cluster.metadata.IndexMetadata;
+diff --git a/x-pack/plugin/ccr/src/test/java/org/elasticsearch/xpack/ccr/allocation/CcrPrimaryFollowerAllocationDeciderTests.java b/x-pack/plugin/ccr/src/test/java/org/elasticsearch/xpack/ccr/allocation/CcrPrimaryFollowerAllocationDeciderTests.java
+index b4a37c084c0..c26dbdd0aec 100644
+--- a/x-pack/plugin/ccr/src/test/java/org/elasticsearch/xpack/ccr/allocation/CcrPrimaryFollowerAllocationDeciderTests.java
++++ b/x-pack/plugin/ccr/src/test/java/org/elasticsearch/xpack/ccr/allocation/CcrPrimaryFollowerAllocationDeciderTests.java
+@@ -5,14 +5,6 @@
+  * 2.0.
+  */
+ 
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0 and the Server Side Public License, v 1; you may not use this file except
+- * in compliance with, at your election, the Elastic License 2.0 or the Server
+- * Side Public License, v 1.
+- */
+-
+ package org.elasticsearch.xpack.ccr.allocation;
+ 
+ import com.carrotsearch.hppc.IntHashSet;
+diff --git a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/cluster/action/MigrateToDataTiersAction.java b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/cluster/action/MigrateToDataTiersAction.java
+index 17699581685..521473e8151 100644
+--- a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/cluster/action/MigrateToDataTiersAction.java
++++ b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/cluster/action/MigrateToDataTiersAction.java
+@@ -4,15 +4,6 @@
+  * 2.0; you may not use this file except in compliance with the Elastic License
+  * 2.0.
+  */
+-
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0 and the Server Side Public License, v 1; you may not use this file except
+- * in compliance with, at your election, the Elastic License 2.0 or the Server
+- * Side Public License, v 1.
+- */
+-
+ package org.elasticsearch.xpack.cluster.action;
+ 
+ import org.elasticsearch.action.ActionType;
+diff --git a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/security/authz/accesscontrol/MatchAllRoleBitSet.java b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/security/authz/accesscontrol/MatchAllRoleBitSet.java
+index 2464105f3f0..8877771d3c0 100644
+--- a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/security/authz/accesscontrol/MatchAllRoleBitSet.java
++++ b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/security/authz/accesscontrol/MatchAllRoleBitSet.java
+@@ -4,15 +4,6 @@
+  * 2.0; you may not use this file except in compliance with the Elastic License
+  * 2.0.
+  */
+-
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0 and the Server Side Public License, v 1; you may not use this file except
+- * in compliance with, at your election, the Elastic License 2.0 or the Server
+- * Side Public License, v 1.
+- */
+-
+ package org.elasticsearch.xpack.core.security.authz.accesscontrol;
+ 
+ import org.apache.lucene.util.BitSet;
+diff --git a/x-pack/plugin/searchable-snapshots/src/internalClusterTest/java/org/elasticsearch/xpack/searchablesnapshots/BaseSearchableSnapshotsIntegTestCase.java b/x-pack/plugin/searchable-snapshots/src/internalClusterTest/java/org/elasticsearch/xpack/searchablesnapshots/BaseSearchableSnapshotsIntegTestCase.java
+index 91c9ce153be..7e178fe045e 100644
+--- a/x-pack/plugin/searchable-snapshots/src/internalClusterTest/java/org/elasticsearch/xpack/searchablesnapshots/BaseSearchableSnapshotsIntegTestCase.java
++++ b/x-pack/plugin/searchable-snapshots/src/internalClusterTest/java/org/elasticsearch/xpack/searchablesnapshots/BaseSearchableSnapshotsIntegTestCase.java
+@@ -4,14 +4,6 @@
+  * 2.0; you may not use this file except in compliance with the Elastic License
+  * 2.0.
+  */
+-
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0 and the Server Side Public License, v 1; you may not use this file except
+- * in compliance with, at your election, the Elastic License 2.0 or the Server
+- * Side Public License, v 1.
+- */
+ package org.elasticsearch.xpack.searchablesnapshots;
+ 
+ import org.apache.lucene.search.TotalHits;
+diff --git a/x-pack/plugin/searchable-snapshots/src/internalClusterTest/java/org/elasticsearch/xpack/searchablesnapshots/SearchableSnapshotsLicenseIntegTests.java b/x-pack/plugin/searchable-snapshots/src/internalClusterTest/java/org/elasticsearch/xpack/searchablesnapshots/SearchableSnapshotsLicenseIntegTests.java
+index d7b828ef9ed..b564cf25dcd 100644
+--- a/x-pack/plugin/searchable-snapshots/src/internalClusterTest/java/org/elasticsearch/xpack/searchablesnapshots/SearchableSnapshotsLicenseIntegTests.java
++++ b/x-pack/plugin/searchable-snapshots/src/internalClusterTest/java/org/elasticsearch/xpack/searchablesnapshots/SearchableSnapshotsLicenseIntegTests.java
+@@ -4,14 +4,6 @@
+  * 2.0; you may not use this file except in compliance with the Elastic License
+  * 2.0.
+  */
+-
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0 and the Server Side Public License, v 1; you may not use this file except
+- * in compliance with, at your election, the Elastic License 2.0 or the Server
+- * Side Public License, v 1.
+- */
+ package org.elasticsearch.xpack.searchablesnapshots;
+ 
+ import org.elasticsearch.ElasticsearchSecurityException;
+diff --git a/x-pack/plugin/spatial/src/internalClusterTest/java/org/elasticsearch/xpack/spatial/search/GeoShapeScriptDocValuesIT.java b/x-pack/plugin/spatial/src/internalClusterTest/java/org/elasticsearch/xpack/spatial/search/GeoShapeScriptDocValuesIT.java
+index 24cb6fd8621..f2c69d7f118 100644
+--- a/x-pack/plugin/spatial/src/internalClusterTest/java/org/elasticsearch/xpack/spatial/search/GeoShapeScriptDocValuesIT.java
++++ b/x-pack/plugin/spatial/src/internalClusterTest/java/org/elasticsearch/xpack/spatial/search/GeoShapeScriptDocValuesIT.java
+@@ -1,10 +1,3 @@
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0; you may not use this file except in compliance with the Elastic License
+- * 2.0.
+- */
+-
+ /*
+  * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+  * or more contributor license agreements. Licensed under the Elastic License
+diff --git a/x-pack/plugin/spatial/src/internalClusterTest/java/org/elasticsearch/xpack/spatial/search/GeoShapeWithDocValuesQueryTests.java b/x-pack/plugin/spatial/src/internalClusterTest/java/org/elasticsearch/xpack/spatial/search/GeoShapeWithDocValuesQueryTests.java
+index 3f5406d3207..03151a0c1ab 100644
+--- a/x-pack/plugin/spatial/src/internalClusterTest/java/org/elasticsearch/xpack/spatial/search/GeoShapeWithDocValuesQueryTests.java
++++ b/x-pack/plugin/spatial/src/internalClusterTest/java/org/elasticsearch/xpack/spatial/search/GeoShapeWithDocValuesQueryTests.java
+@@ -1,10 +1,3 @@
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0; you may not use this file except in compliance with the Elastic License
+- * 2.0.
+- */
+-
+ /*
+  * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+  * or more contributor license agreements. Licensed under the Elastic License
+diff --git a/x-pack/plugin/spatial/src/test/java/org/elasticsearch/xpack/spatial/index/mapper/GeoShapeWithDocValuesFieldMapperTests.java b/x-pack/plugin/spatial/src/test/java/org/elasticsearch/xpack/spatial/index/mapper/GeoShapeWithDocValuesFieldMapperTests.java
+index 6a0abebb5f3..e3e0eec910e 100644
+--- a/x-pack/plugin/spatial/src/test/java/org/elasticsearch/xpack/spatial/index/mapper/GeoShapeWithDocValuesFieldMapperTests.java
++++ b/x-pack/plugin/spatial/src/test/java/org/elasticsearch/xpack/spatial/index/mapper/GeoShapeWithDocValuesFieldMapperTests.java
+@@ -1,10 +1,3 @@
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0; you may not use this file except in compliance with the Elastic License
+- * 2.0.
+- */
+-
+ /*
+  * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+  * or more contributor license agreements. Licensed under the Elastic License
+diff --git a/x-pack/plugin/spatial/src/yamlRestTest/java/org/elasticsearch/xpack/spatial/SpatialClientYamlTestSuiteIT.java b/x-pack/plugin/spatial/src/yamlRestTest/java/org/elasticsearch/xpack/spatial/SpatialClientYamlTestSuiteIT.java
+index bff3f38d761..ff4c5953239 100644
+--- a/x-pack/plugin/spatial/src/yamlRestTest/java/org/elasticsearch/xpack/spatial/SpatialClientYamlTestSuiteIT.java
++++ b/x-pack/plugin/spatial/src/yamlRestTest/java/org/elasticsearch/xpack/spatial/SpatialClientYamlTestSuiteIT.java
+@@ -1,10 +1,3 @@
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0; you may not use this file except in compliance with the Elastic License
+- * 2.0.
+- */
+-
+ /*
+  * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+  * or more contributor license agreements. Licensed under the Elastic License
+-- 
+2.15.0
+
