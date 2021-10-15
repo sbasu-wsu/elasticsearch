@@ -1,0 +1,26 @@
+From f9ec6d2e33af2c0da1a0806909ed99e40b239398 Mon Sep 17 00:00:00 2001
+From: Ryan Lodermeier <rlodermeier@gmail.com>
+Date: Fri, 15 Oct 2021 11:39:39 -0700
+Subject: [PATCH] Fix for 77717
+
+---
+ .../java/org/elasticsearch/index/query/GeoBoundingBoxQueryBuilder.java | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/server/src/main/java/org/elasticsearch/index/query/GeoBoundingBoxQueryBuilder.java b/server/src/main/java/org/elasticsearch/index/query/GeoBoundingBoxQueryBuilder.java
+index a6ee84c9a9b..bed4e3a305e 100644
+--- a/server/src/main/java/org/elasticsearch/index/query/GeoBoundingBoxQueryBuilder.java
++++ b/server/src/main/java/org/elasticsearch/index/query/GeoBoundingBoxQueryBuilder.java
+@@ -121,9 +121,6 @@ public class GeoBoundingBoxQueryBuilder extends AbstractQueryBuilder<GeoBounding
+             if (top < bottom) {
+                 throw new IllegalArgumentException("top is below bottom corner: " +
+                             top + " vs. " + bottom);
+-            } else if (top == bottom) {
+-                throw new IllegalArgumentException("top cannot be the same as bottom: " +
+-                    top + " == " + bottom);
+             } else if (left == right) {
+                 throw new IllegalArgumentException("left cannot be the same as right: " +
+                     left + " == " + right);
+-- 
+2.15.0
+

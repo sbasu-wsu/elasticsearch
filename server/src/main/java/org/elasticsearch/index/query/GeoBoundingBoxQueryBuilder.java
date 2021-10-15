@@ -121,9 +121,6 @@ public class GeoBoundingBoxQueryBuilder extends AbstractQueryBuilder<GeoBounding
             if (top < bottom) {
                 throw new IllegalArgumentException("top is below bottom corner: " +
                             top + " vs. " + bottom);
-            } else if (top == bottom) {
-                throw new IllegalArgumentException("top cannot be the same as bottom: " +
-                    top + " == " + bottom);
             } else if (left == right) {
                 throw new IllegalArgumentException("left cannot be the same as right: " +
                     left + " == " + right);
