@@ -379,8 +379,113 @@ public final class SearchPhaseController {
                 topDocs.add(td.topDocs);
             }
         }
-        return topDocsStats.reducedQueryPhase(queryResults, Collections.emptyList(), topDocs,
+        return reducedQueryPhase(queryResults, Collections.emptyList(), topDocs, topDocsStats,
             0, true, aggReduceContextBuilder, true);
+    }
+
+    /**
+     * Reduces the given query results and consumes all aggregations and profile results.
+     * @param queryResults a list of non-null query shard results
+     * @param bufferedAggs a list of pre-collected aggregations.
+     * @param bufferedTopDocs a list of pre-collected top docs.
+     * @param numReducePhases the number of non-final reduce phases applied to the query results.
+     * @see QuerySearchResult#consumeAggs()
+     * @see QuerySearchResult#consumeProfileResult()
+     */
+    ReducedQueryPhase reducedQueryPhase(Collection<? extends SearchPhaseResult> queryResults,
+                                        List<InternalAggregations> bufferedAggs,
+                                        List<TopDocs> bufferedTopDocs,
+                                        TopDocsStats topDocsStats, int numReducePhases, boolean isScrollRequest,
+                                        InternalAggregation.ReduceContextBuilder aggReduceContextBuilder,
+                                        boolean performFinalReduce) {
+        assert numReducePhases >= 0 : "num reduce phases must be >= 0 but was: " + numReducePhases;
+        numReducePhases++; // increment for this phase
+        if (queryResults.isEmpty()) { // early terminate we have nothing to reduce
+            final TotalHits totalHits = topDocsStats.getTotalHits();
+            return new ReducedQueryPhase(
+                totalHits,
+                topDocsStats.fetchHits,
+                topDocsStats.getMaxScore(),
+                false,
+                null,
+                null,
+                null,
+                null,
+                SortedTopDocs.EMPTY,
+                null,
+                numReducePhases,
+                0,
+                0,
+                true
+            );
+        }
+        int total = queryResults.size();
+        queryResults = queryResults.stream()
+            .filter(res -> res.queryResult().isNull() == false)
+            .collect(Collectors.toList());
+        String errorMsg = "must have at least one non-empty search result, got 0 out of " + total;
+        assert queryResults.isEmpty() == false : errorMsg;
+        if (queryResults.isEmpty()) {
+            throw new IllegalStateException(errorMsg);
+        }
+        validateMergeSortValueFormats(queryResults);
+        final boolean hasSuggest = queryResults.stream().anyMatch(res -> res.queryResult().suggest() != null);
+        final boolean hasProfileResults =  queryResults.stream().anyMatch(res -> res.queryResult().hasProfileResults());
+
+        // count the total (we use the query result provider here, since we might not get any hits (we scrolled past them))
+        final Map<String, List<Suggestion<?>>> groupedSuggestions = hasSuggest ? new HashMap<>() : Collections.emptyMap();
+        final Map<String, SearchProfileQueryPhaseResult> profileShardResults = hasProfileResults
+            ? new HashMap<>(queryResults.size())
+            : Collections.emptyMap();
+        int from = 0;
+        int size = 0;
+        DocValueFormat[] sortValueFormats = null;
+        for (SearchPhaseResult entry : queryResults) {
+            QuerySearchResult result = entry.queryResult();
+            from = result.from();
+            // sorted queries can set the size to 0 if they have enough competitive hits.
+            size = Math.max(result.size(), size);
+            if (result.sortValueFormats() != null) {
+                sortValueFormats = result.sortValueFormats();
+            }
+
+            if (hasSuggest) {
+                assert result.suggest() != null;
+                for (Suggestion<? extends Suggestion.Entry<? extends Suggestion.Entry.Option>> suggestion : result.suggest()) {
+                    List<Suggestion<?>> suggestionList = groupedSuggestions.computeIfAbsent(suggestion.getName(), s -> new ArrayList<>());
+                    suggestionList.add(suggestion);
+                    if (suggestion instanceof CompletionSuggestion) {
+                        CompletionSuggestion completionSuggestion = (CompletionSuggestion) suggestion;
+                        completionSuggestion.setShardIndex(result.getShardIndex());
+                    }
+                }
+            }
+            if (bufferedTopDocs.isEmpty() == false) {
+                assert result.hasConsumedTopDocs() : "firstResult has no aggs but we got non null buffered aggs?";
+            }
+            if (hasProfileResults) {
+                String key = result.getSearchShardTarget().toString();
+                profileShardResults.put(key, result.consumeProfileResult());
+            }
+        }
+        final Suggest reducedSuggest;
+        final List<CompletionSuggestion> reducedCompletionSuggestions;
+        if (groupedSuggestions.isEmpty()) {
+            reducedSuggest = null;
+            reducedCompletionSuggestions = Collections.emptyList();
+        } else {
+            reducedSuggest = new Suggest(Suggest.reduce(groupedSuggestions));
+            reducedCompletionSuggestions = reducedSuggest.filter(CompletionSuggestion.class);
+        }
+        final InternalAggregations aggregations = reduceAggs(aggReduceContextBuilder, performFinalReduce, bufferedAggs);
+        final SearchProfileResultsBuilder profileBuilder = profileShardResults.isEmpty()
+            ? null
+            : new SearchProfileResultsBuilder(profileShardResults);
+        final SortedTopDocs sortedTopDocs = sortDocs(isScrollRequest, bufferedTopDocs, from, size, reducedCompletionSuggestions);
+        final TotalHits totalHits = topDocsStats.getTotalHits();
+        return new ReducedQueryPhase(totalHits, topDocsStats.fetchHits, topDocsStats.getMaxScore(),
+            topDocsStats.timedOut, topDocsStats.terminatedEarly, reducedSuggest, aggregations, profileBuilder, sortedTopDocs,
+            sortValueFormats, numReducePhases, size, from, false);
     }
 
     private static InternalAggregations reduceAggs(InternalAggregation.ReduceContextBuilder aggReduceContextBuilder,
@@ -603,114 +708,6 @@ public final class SearchPhaseController {
                     this.terminatedEarly = true;
                 }
             }
-        }
-
-        /**
-         * Reduces the given query results and consumes all aggregations and profile results.
-         * @param queryResults a list of non-null query shard results
-         * @param bufferedAggs a list of pre-collected aggregations.
-         * @param bufferedTopDocs a list of pre-collected top docs.
-         * @param numReducePhases the number of non-final reduce phases applied to the query results.
-         * @param isScrollRequest
-         * @param aggReduceContextBuilder
-         * @param performFinalReduce
-         * @see QuerySearchResult#consumeAggs()
-         * @see QuerySearchResult#consumeProfileResult()
-         */
-        ReducedQueryPhase reducedQueryPhase(Collection<? extends SearchPhaseResult> queryResults,
-                                            List<InternalAggregations> bufferedAggs,
-                                            List<TopDocs> bufferedTopDocs,
-                                            int numReducePhases, boolean isScrollRequest,
-                                            InternalAggregation.ReduceContextBuilder aggReduceContextBuilder,
-                                            boolean performFinalReduce) {
-            assert numReducePhases >= 0 : "num reduce phases must be >= 0 but was: " + numReducePhases;
-            numReducePhases++; // increment for this phase
-            if (queryResults.isEmpty()) { // early terminate we have nothing to reduce
-                final TotalHits totalHits = getTotalHits();
-                return new ReducedQueryPhase(
-                    totalHits,
-                    fetchHits,
-                    getMaxScore(),
-                    false,
-                    null,
-                    null,
-                    null,
-                    null,
-                    SortedTopDocs.EMPTY,
-                    null,
-                    numReducePhases,
-                    0,
-                    0,
-                    true
-                );
-            }
-            int total = queryResults.size();
-            queryResults = queryResults.stream()
-                .filter(res -> res.queryResult().isNull() == false)
-                .collect(Collectors.toList());
-            String errorMsg = "must have at least one non-empty search result, got 0 out of " + total;
-            assert queryResults.isEmpty() == false : errorMsg;
-            if (queryResults.isEmpty()) {
-                throw new IllegalStateException(errorMsg);
-            }
-            validateMergeSortValueFormats(queryResults);
-            final boolean hasSuggest = queryResults.stream().anyMatch(res -> res.queryResult().suggest() != null);
-            final boolean hasProfileResults =  queryResults.stream().anyMatch(res -> res.queryResult().hasProfileResults());
-
-            // count the total (we use the query result provider here, since we might not get any hits (we scrolled past them))
-            final Map<String, List<Suggestion<?>>> groupedSuggestions = hasSuggest ? new HashMap<>() : Collections.emptyMap();
-            final Map<String, SearchProfileQueryPhaseResult> profileShardResults = hasProfileResults
-                ? new HashMap<>(queryResults.size())
-                : Collections.emptyMap();
-            int from = 0;
-            int size = 0;
-            DocValueFormat[] sortValueFormats = null;
-            for (SearchPhaseResult entry : queryResults) {
-                QuerySearchResult result = entry.queryResult();
-                from = result.from();
-                // sorted queries can set the size to 0 if they have enough competitive hits.
-                size = Math.max(result.size(), size);
-                if (result.sortValueFormats() != null) {
-                    sortValueFormats = result.sortValueFormats();
-                }
-
-                if (hasSuggest) {
-                    assert result.suggest() != null;
-                    for (Suggestion<? extends Suggestion.Entry<? extends Suggestion.Entry.Option>> suggestion : result.suggest()) {
-                        List<Suggestion<?>> suggestionList = groupedSuggestions.computeIfAbsent(suggestion.getName(), s -> new ArrayList<>());
-                        suggestionList.add(suggestion);
-                        if (suggestion instanceof CompletionSuggestion) {
-                            CompletionSuggestion completionSuggestion = (CompletionSuggestion) suggestion;
-                            completionSuggestion.setShardIndex(result.getShardIndex());
-                        }
-                    }
-                }
-                if (bufferedTopDocs.isEmpty() == false) {
-                    assert result.hasConsumedTopDocs() : "firstResult has no aggs but we got non null buffered aggs?";
-                }
-                if (hasProfileResults) {
-                    String key = result.getSearchShardTarget().toString();
-                    profileShardResults.put(key, result.consumeProfileResult());
-                }
-            }
-            final Suggest reducedSuggest;
-            final List<CompletionSuggestion> reducedCompletionSuggestions;
-            if (groupedSuggestions.isEmpty()) {
-                reducedSuggest = null;
-                reducedCompletionSuggestions = Collections.emptyList();
-            } else {
-                reducedSuggest = new Suggest(Suggest.reduce(groupedSuggestions));
-                reducedCompletionSuggestions = reducedSuggest.filter(CompletionSuggestion.class);
-            }
-            final InternalAggregations aggregations = reduceAggs(aggReduceContextBuilder, performFinalReduce, bufferedAggs);
-            final SearchProfileResultsBuilder profileBuilder = profileShardResults.isEmpty()
-                ? null
-                : new SearchProfileResultsBuilder(profileShardResults);
-            final SortedTopDocs sortedTopDocs = sortDocs(isScrollRequest, bufferedTopDocs, from, size, reducedCompletionSuggestions);
-            final TotalHits totalHits = getTotalHits();
-            return new ReducedQueryPhase(totalHits, fetchHits, getMaxScore(),
-                timedOut, terminatedEarly, reducedSuggest, aggregations, profileBuilder, sortedTopDocs,
-                sortValueFormats, numReducePhases, size, from, false);
         }
     }
 
