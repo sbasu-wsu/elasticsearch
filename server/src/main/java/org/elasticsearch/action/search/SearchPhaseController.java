@@ -259,7 +259,7 @@ public final class SearchPhaseController {
             return InternalSearchResponse.empty();
         }
         ScoreDoc[] sortedDocs = reducedQueryPhase.sortedTopDocs.scoreDocs;
-        SearchHits hits = reducedQueryPhase.getHits(ignoreFrom, fetchResults, resultsLookup);
+        SearchHits hits = getHits(reducedQueryPhase, ignoreFrom, fetchResults, resultsLookup);
         if (reducedQueryPhase.suggest != null) {
             if (fetchResults.isEmpty() == false) {
                 int currentOffset = hits.getHits().length;
@@ -292,6 +292,62 @@ public final class SearchPhaseController {
             }
         }
         return reducedQueryPhase.buildResponse(hits, fetchResults);
+    }
+
+    private SearchHits getHits(ReducedQueryPhase reducedQueryPhase, boolean ignoreFrom,
+                               Collection<? extends SearchPhaseResult> fetchResults, IntFunction<SearchPhaseResult> resultsLookup) {
+        SortedTopDocs sortedTopDocs = reducedQueryPhase.sortedTopDocs;
+        int sortScoreIndex = -1;
+        if (sortedTopDocs.isSortedByField) {
+            SortField[] sortFields = sortedTopDocs.sortFields;
+            for (int i = 0; i < sortFields.length; i++) {
+                if (sortFields[i].getType() == SortField.Type.SCORE) {
+                    sortScoreIndex = i;
+                }
+            }
+        }
+        // clean the fetch counter
+        for (SearchPhaseResult entry : fetchResults) {
+            entry.fetchResult().initCounter();
+        }
+        int from = ignoreFrom ? 0 : reducedQueryPhase.from;
+        int numSearchHits = (int) Math.min(reducedQueryPhase.fetchHits - from, reducedQueryPhase.size);
+        // with collapsing we can have more fetch hits than sorted docs
+        // also we need to take into account that we potentially have completion suggestions stored in the scoreDocs array
+        numSearchHits = Math.min(sortedTopDocs.scoreDocs.length - sortedTopDocs.numberOfCompletionsSuggestions, numSearchHits);
+        // merge hits
+        List<SearchHit> hits = new ArrayList<>();
+        if (fetchResults.isEmpty() == false) {
+            for (int i = 0; i < numSearchHits; i++) {
+                ScoreDoc shardDoc = sortedTopDocs.scoreDocs[i];
+                SearchPhaseResult fetchResultProvider = resultsLookup.apply(shardDoc.shardIndex);
+                if (fetchResultProvider == null) {
+                    // this can happen if we are hitting a shard failure during the fetch phase
+                    // in this case we referenced the shard result via the ScoreDoc but never got a
+                    // result from fetch.
+                    // TODO it would be nice to assert this in the future
+                    continue;
+                }
+                FetchSearchResult fetchResult = fetchResultProvider.fetchResult();
+                final int index = fetchResult.counterGetAndIncrement();
+                assert index < fetchResult.hits().getHits().length : "not enough hits fetched. index [" + index + "] length: "
+                    + fetchResult.hits().getHits().length;
+                SearchHit searchHit = fetchResult.hits().getHits()[index];
+                searchHit.shard(fetchResult.getSearchShardTarget());
+                if (sortedTopDocs.isSortedByField) {
+                    FieldDoc fieldDoc = (FieldDoc) shardDoc;
+                    searchHit.sortValues(fieldDoc.fields, reducedQueryPhase.sortValueFormats);
+                    if (sortScoreIndex != -1) {
+                        searchHit.score(((Number) fieldDoc.fields[sortScoreIndex]).floatValue());
+                    }
+                } else {
+                    searchHit.score(shardDoc.score);
+                }
+                hits.add(searchHit);
+            }
+        }
+        return new SearchHits(hits.toArray(new SearchHit[0]), reducedQueryPhase.totalHits,
+            reducedQueryPhase.maxScore, sortedTopDocs.sortFields, sortedTopDocs.collapseField, sortedTopDocs.collapseValues);
     }
 
     /**
@@ -467,62 +523,6 @@ public final class SearchPhaseController {
 
             }
             return profileBuilder.build(fetchResults);
-        }
-
-        private SearchHits getHits(boolean ignoreFrom,
-                                   Collection<? extends SearchPhaseResult> fetchResults, IntFunction<SearchPhaseResult> resultsLookup) {
-            SortedTopDocs sortedTopDocs = this.sortedTopDocs;
-            int sortScoreIndex = -1;
-            if (sortedTopDocs.isSortedByField) {
-                SortField[] sortFields = sortedTopDocs.sortFields;
-                for (int i = 0; i < sortFields.length; i++) {
-                    if (sortFields[i].getType() == SortField.Type.SCORE) {
-                        sortScoreIndex = i;
-                    }
-                }
-            }
-            // clean the fetch counter
-            for (SearchPhaseResult entry : fetchResults) {
-                entry.fetchResult().initCounter();
-            }
-            int from = ignoreFrom ? 0 : this.from;
-            int numSearchHits = (int) Math.min(fetchHits - from, size);
-            // with collapsing we can have more fetch hits than sorted docs
-            // also we need to take into account that we potentially have completion suggestions stored in the scoreDocs array
-            numSearchHits = Math.min(sortedTopDocs.scoreDocs.length - sortedTopDocs.numberOfCompletionsSuggestions, numSearchHits);
-            // merge hits
-            List<SearchHit> hits = new ArrayList<>();
-            if (fetchResults.isEmpty() == false) {
-                for (int i = 0; i < numSearchHits; i++) {
-                    ScoreDoc shardDoc = sortedTopDocs.scoreDocs[i];
-                    SearchPhaseResult fetchResultProvider = resultsLookup.apply(shardDoc.shardIndex);
-                    if (fetchResultProvider == null) {
-                        // this can happen if we are hitting a shard failure during the fetch phase
-                        // in this case we referenced the shard result via the ScoreDoc but never got a
-                        // result from fetch.
-                        // TODO it would be nice to assert this in the future
-                        continue;
-                    }
-                    FetchSearchResult fetchResult = fetchResultProvider.fetchResult();
-                    final int index = fetchResult.counterGetAndIncrement();
-                    assert index < fetchResult.hits().getHits().length : "not enough hits fetched. index [" + index + "] length: "
-                        + fetchResult.hits().getHits().length;
-                    SearchHit searchHit = fetchResult.hits().getHits()[index];
-                    searchHit.shard(fetchResult.getSearchShardTarget());
-                    if (sortedTopDocs.isSortedByField) {
-                        FieldDoc fieldDoc = (FieldDoc) shardDoc;
-                        searchHit.sortValues(fieldDoc.fields, sortValueFormats);
-                        if (sortScoreIndex != -1) {
-                            searchHit.score(((Number) fieldDoc.fields[sortScoreIndex]).floatValue());
-                        }
-                    } else {
-                        searchHit.score(shardDoc.score);
-                    }
-                    hits.add(searchHit);
-                }
-            }
-            return new SearchHits(hits.toArray(new SearchHit[0]), totalHits,
-                maxScore, sortedTopDocs.sortFields, sortedTopDocs.collapseField, sortedTopDocs.collapseValues);
         }
     }
 
