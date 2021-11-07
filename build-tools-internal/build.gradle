@@ -188,6 +188,17 @@ tasks.withType(JavaCompile).configureEach {
   options.encoding = 'UTF-8'
 }
 
+tasks.withType(Jar).configureEach {
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+//  manifest {
+//    attributes["Main-Class"] = "MainKt"
+//  }
+
+//  configurations["compileClasspath"].forEach { file: File ->
+//    from(zipTree(file.absoluteFile))
+//  }
+}
 tasks.named('licenseHeaders').configure {
   // ignore gradle generated binary script plugins
   excludes << "Elasticsearch*Plugin.java"
