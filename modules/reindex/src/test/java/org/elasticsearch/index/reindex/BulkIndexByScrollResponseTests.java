@@ -32,6 +32,18 @@ public class BulkIndexByScrollResponseTests extends ESTestCase {
         boolean timedOut = false;
         String reasonCancelled = rarely() ? randomAlphaOfLength(5) : null;
 
+        timedOut = isTimedOut(mergeCount, responses, took, tookIndex, allBulkFailures, allSearchFailures, timedOut);
+
+        BulkByScrollResponse merged = new BulkByScrollResponse(responses, reasonCancelled);
+
+        assertEquals(timeValueMillis(took), merged.getTook());
+        assertEquals(allBulkFailures, merged.getBulkFailures());
+        assertEquals(allSearchFailures, merged.getSearchFailures());
+        assertEquals(timedOut, merged.isTimedOut());
+        assertEquals(reasonCancelled, merged.getReasonCancelled());
+    }
+
+    private boolean isTimedOut(int mergeCount, List<BulkByScrollResponse> responses, int took, int tookIndex, List<BulkItemResponse.Failure> allBulkFailures, List<SearchFailure> allSearchFailures, boolean timedOut) {
         for (int i = 0; i < mergeCount; i++) {
             // One of the merged responses gets the expected value for took, the others get a smaller value
             TimeValue thisTook = timeValueMillis(i == tookIndex ? took : between(0, took));
@@ -50,13 +62,6 @@ public class BulkIndexByScrollResponseTests extends ESTestCase {
             timedOut |= thisTimedOut;
             responses.add(new BulkByScrollResponse(thisTook, status, bulkFailures, searchFailures, thisTimedOut));
         }
-
-        BulkByScrollResponse merged = new BulkByScrollResponse(responses, reasonCancelled);
-
-        assertEquals(timeValueMillis(took), merged.getTook());
-        assertEquals(allBulkFailures, merged.getBulkFailures());
-        assertEquals(allSearchFailures, merged.getSearchFailures());
-        assertEquals(timedOut, merged.isTimedOut());
-        assertEquals(reasonCancelled, merged.getReasonCancelled());
+        return timedOut;
     }
 }

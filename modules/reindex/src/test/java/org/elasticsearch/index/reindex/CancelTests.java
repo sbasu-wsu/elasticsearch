@@ -134,17 +134,7 @@ public class CancelTests extends ReindexTestCase {
         assertEquals(CancelTasksRequest.DEFAULT_REASON, status.getReasonCancelled());
 
         if (builder.request().getSlices() > 1) {
-            boolean foundCancelled = false;
-            ListTasksResponse sliceList = client().admin().cluster().prepareListTasks().setParentTaskId(mainTask.getTaskId())
-                    .setDetailed(true).get();
-            sliceList.rethrowFailures("Fetch slice tasks");
-            logger.debug("finding at least one canceled child among {}", sliceList.getTasks());
-            for (TaskInfo slice: sliceList.getTasks()) {
-                BulkByScrollTask.Status sliceStatus = (BulkByScrollTask.Status) slice.getStatus();
-                if (sliceStatus.getReasonCancelled() == null) continue;
-                assertEquals(CancelTasksRequest.DEFAULT_REASON, sliceStatus.getReasonCancelled());
-                foundCancelled = true;
-            }
+            boolean foundCancelled = isFoundCancelled(mainTask);
             assertTrue("Didn't find at least one sub task that was cancelled", foundCancelled);
         }
 
@@ -184,6 +174,21 @@ public class CancelTests extends ReindexTestCase {
 
         flushAndRefresh(INDEX);
         assertion.assertThat(response, numDocs, numModifiedDocs);
+    }
+
+    private boolean isFoundCancelled(TaskInfo mainTask) {
+        boolean foundCancelled = false;
+        ListTasksResponse sliceList = client().admin().cluster().prepareListTasks().setParentTaskId(mainTask.getTaskId())
+                .setDetailed(true).get();
+        sliceList.rethrowFailures("Fetch slice tasks");
+        logger.debug("finding at least one canceled child among {}", sliceList.getTasks());
+        for (TaskInfo slice: sliceList.getTasks()) {
+            BulkByScrollTask.Status sliceStatus = (BulkByScrollTask.Status) slice.getStatus();
+            if (sliceStatus.getReasonCancelled() == null) continue;
+            assertEquals(CancelTasksRequest.DEFAULT_REASON, sliceStatus.getReasonCancelled());
+            foundCancelled = true;
+        }
+        return foundCancelled;
     }
 
     public static TaskInfo findTaskToCancel(String actionName, int workerCount) {

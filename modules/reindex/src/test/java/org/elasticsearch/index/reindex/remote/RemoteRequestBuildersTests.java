@@ -140,18 +140,10 @@ public class RemoteRequestBuildersTests extends ESTestCase {
         SearchRequest searchRequest = new SearchRequest().source(new SearchSourceBuilder());
         Version remoteVersion = Version.fromId(between(0, Version.CURRENT.id));
 
-        TimeValue scroll = null;
-        if (randomBoolean()) {
-            scroll = TimeValue.parseTimeValue(randomPositiveTimeValue(), "test");
-            searchRequest.scroll(scroll);
-        }
+        TimeValue scroll = getTimeValue(searchRequest);
         int size = between(0, Integer.MAX_VALUE);
         searchRequest.source().size(size);
-        Boolean fetchVersion = null;
-        if (randomBoolean()) {
-            fetchVersion = randomBoolean();
-            searchRequest.source().version(fetchVersion);
-        }
+        Boolean fetchVersion = getaBoolean(searchRequest);
 
         Map<String, String> params = initialSearch(searchRequest, query, remoteVersion).getParameters();
 
@@ -167,6 +159,24 @@ public class RemoteRequestBuildersTests extends ESTestCase {
         } else {
             assertThat(params, hasEntry("version", Boolean.FALSE.toString()));
         }
+    }
+
+    private TimeValue getTimeValue(SearchRequest searchRequest) {
+        TimeValue scroll = null;
+        if (randomBoolean()) {
+            scroll = TimeValue.parseTimeValue(randomPositiveTimeValue(), "test");
+            searchRequest.scroll(scroll);
+        }
+        return scroll;
+    }
+
+    private Boolean getaBoolean(SearchRequest searchRequest) {
+        Boolean fetchVersion = null;
+        if (randomBoolean()) {
+            fetchVersion = randomBoolean();
+            searchRequest.source().version(fetchVersion);
+        }
+        return fetchVersion;
     }
 
     public void testInitialSearchDisallowPartialResults() {

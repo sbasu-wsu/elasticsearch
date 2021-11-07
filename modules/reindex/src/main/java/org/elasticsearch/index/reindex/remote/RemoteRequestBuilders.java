@@ -52,14 +52,7 @@ final class RemoteRequestBuilders {
         Request request = new Request("POST", path.toString());
 
         if (searchRequest.scroll() != null) {
-            TimeValue keepAlive = searchRequest.scroll().keepAlive();
-            // V_5_0_0
-            if (remoteVersion.before(Version.fromId(5000099))) {
-                /* Versions of Elasticsearch before 5.0 couldn't parse nanos or micros
-                 * so we toss out that resolution, rounding up because more scroll
-                 * timeout seems safer than less. */
-                keepAlive = timeValueMillis((long) Math.ceil(keepAlive.millisFrac()));
-            }
+            TimeValue keepAlive = getTimeValue(searchRequest, remoteVersion);
             request.addParameter("scroll", keepAlive.getStringRep());
         }
         request.addParameter("size", Integer.toString(searchRequest.source().size()));
@@ -74,15 +67,7 @@ final class RemoteRequestBuilders {
             boolean useScan = false;
             // Detect if we should use search_type=scan rather than a sort
             if (remoteVersion.before(Version.fromId(2010099))) {
-                for (SortBuilder<?> sort : searchRequest.source().sorts()) {
-                    if (sort instanceof FieldSortBuilder) {
-                        FieldSortBuilder f = (FieldSortBuilder) sort;
-                        if (f.getFieldName().equals(FieldSortBuilder.DOC_FIELD_NAME)) {
-                            useScan = true;
-                            break;
-                        }
-                    }
-                }
+                useScan = isUseScan(searchRequest, useScan);
             }
             if (useScan) {
                 request.addParameter("search_type", "scan");
@@ -154,6 +139,31 @@ final class RemoteRequestBuilders {
         return request;
     }
 
+    private static boolean isUseScan(SearchRequest searchRequest, boolean useScan) {
+        for (SortBuilder<?> sort : searchRequest.source().sorts()) {
+            if (sort instanceof FieldSortBuilder) {
+                FieldSortBuilder f = (FieldSortBuilder) sort;
+                if (f.getFieldName().equals(FieldSortBuilder.DOC_FIELD_NAME)) {
+                    useScan = true;
+                    break;
+                }
+            }
+        }
+        return useScan;
+    }
+
+    private static TimeValue getTimeValue(SearchRequest searchRequest, Version remoteVersion) {
+        TimeValue keepAlive = searchRequest.scroll().keepAlive();
+        // V_5_0_0
+        if (remoteVersion.before(Version.fromId(5000099))) {
+            /* Versions of Elasticsearch before 5.0 couldn't parse nanos or micros
+             * so we toss out that resolution, rounding up because more scroll
+             * timeout seems safer than less. */
+            keepAlive = timeValueMillis((long) Math.ceil(keepAlive.millisFrac()));
+        }
+        return keepAlive;
+    }
+
     private static void addIndices(StringBuilder path, String[] indices) {
         if (indices == null || indices.length == 0) {
             return;
@@ -182,12 +192,7 @@ final class RemoteRequestBuilders {
         Request request = new Request("POST", "/_search/scroll");
 
         // V_5_0_0
-        if (remoteVersion.before(Version.fromId(5000099))) {
-            /* Versions of Elasticsearch before 5.0 couldn't parse nanos or micros
-             * so we toss out that resolution, rounding up so we shouldn't end up
-             * with 0s. */
-            keepAlive = timeValueMillis((long) Math.ceil(keepAlive.millisFrac()));
-        }
+        keepAlive = getTimeValue(keepAlive, remoteVersion);
         request.addParameter("scroll", keepAlive.getStringRep());
 
         if (remoteVersion.before(Version.fromId(2000099))) {
@@ -205,6 +210,16 @@ final class RemoteRequestBuilders {
             throw new ElasticsearchException("failed to build scroll entity", e);
         }
         return request;
+    }
+
+    private static TimeValue getTimeValue(TimeValue keepAlive, Version remoteVersion) {
+        if (remoteVersion.before(Version.fromId(5000099))) {
+            /* Versions of Elasticsearch before 5.0 couldn't parse nanos or micros
+             * so we toss out that resolution, rounding up so we shouldn't end up
+             * with 0s. */
+            keepAlive = timeValueMillis((long) Math.ceil(keepAlive.millisFrac()));
+        }
+        return keepAlive;
     }
 
     static Request clearScroll(String scroll, Version remoteVersion) {

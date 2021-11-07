@@ -531,11 +531,7 @@ public class AsyncBulkByScrollActionTests extends ESTestCase {
      * testRequest.getMaxRetries and controlled by the failWithRejection parameter.
      */
     private void bulkRetryTestCase(boolean failWithRejection) throws Exception {
-        int totalFailures = randomIntBetween(1, testRequest.getMaxRetries());
-        int size = randomIntBetween(1, 100);
-        testRequest.setMaxRetries(totalFailures - (failWithRejection ? 1 : 0));
-
-        client.bulksToReject = client.bulksAttempts.get() + totalFailures;
+        size = getSize(failWithRejection);
         DummyAsyncBulkByScrollAction action = new DummyActionWithoutBackoff();
         BulkRequest request = new BulkRequest();
         for (int i = 0; i < size + 1; i++) {
@@ -555,21 +551,36 @@ public class AsyncBulkByScrollActionTests extends ESTestCase {
         }
     }
 
+    private int getSize(boolean failWithRejection) {
+        int size;
+        int totalFailures = randomIntBetween(1, testRequest.getMaxRetries());
+        int size = randomIntBetween(1, 100);
+        testRequest.setMaxRetries(totalFailures - (failWithRejection ? 1 : 0));
+
+        client.bulksToReject = client.bulksAttempts.get() + totalFailures;
+        return size;
+    }
+
     /**
      * The default retry time matches what we say it is in the javadoc for the request.
      */
     public void testDefaultRetryTimes() {
         Iterator<TimeValue> policy = new DummyAsyncBulkByScrollAction().buildBackoffPolicy().iterator();
         long millis = 0;
-        while (policy.hasNext()) {
-            millis += policy.next().millis();
-        }
+        millis = getMillis(policy, millis);
         /*
          * This is the total number of milliseconds that a reindex made with the default settings will backoff before attempting one final
          * time. If that request is rejected then the whole process fails with a rejected exception.
          */
         int defaultBackoffBeforeFailing = 59460;
         assertEquals(defaultBackoffBeforeFailing, millis);
+    }
+
+    private long getMillis(Iterator<TimeValue> policy, long millis) {
+        while (policy.hasNext()) {
+            millis += policy.next().millis();
+        }
+        return millis;
     }
 
     public void testRefreshIsFalseByDefault() throws Exception {

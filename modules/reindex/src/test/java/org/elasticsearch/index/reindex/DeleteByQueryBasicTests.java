@@ -100,17 +100,7 @@ public class DeleteByQueryBasicTests extends ReindexTestCase {
         long deletions = 0;
 
         List<IndexRequestBuilder> builders = new ArrayList<>();
-        for (int i = 0; i < indices; i++) {
-            // number of documents to be deleted with the upcoming delete-by-query
-            // (this number differs for each index)
-            candidates[i] = randomIntBetween(1, docs);
-            deletions = deletions + candidates[i];
-
-            for (int j = 0; j < docs; j++) {
-                boolean candidate = (j < candidates[i]);
-                builders.add(client().prepareIndex("test-" + i).setId(String.valueOf(j)).setSource("candidate", candidate));
-            }
-        }
+        deletions = getDeletions(indices, docs, candidates, deletions, builders);
         indexRandom(true, true, true, builders);
 
         // Deletes all the documents with candidate=true
@@ -123,6 +113,21 @@ public class DeleteByQueryBasicTests extends ReindexTestCase {
         }
 
         assertHitCount(client().prepareSearch().setSize(0).get(), (indices * docs) - deletions);
+    }
+
+    private long getDeletions(int indices, int docs, long[] candidates, long deletions, List<IndexRequestBuilder> builders) {
+        for (int i = 0; i < indices; i++) {
+            // number of documents to be deleted with the upcoming delete-by-query
+            // (this number differs for each index)
+            candidates[i] = randomIntBetween(1, docs);
+            deletions = deletions + candidates[i];
+
+            for (int j = 0; j < docs; j++) {
+                boolean candidate = (j < candidates[i]);
+                builders.add(client().prepareIndex("test-" + i).setId(String.valueOf(j)).setSource("candidate", candidate));
+            }
+        }
+        return deletions;
     }
 
     public void testDeleteByQueryWithMissingIndex() throws Exception {

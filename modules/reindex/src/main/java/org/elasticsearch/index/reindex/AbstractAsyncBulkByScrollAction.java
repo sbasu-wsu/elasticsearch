@@ -284,10 +284,7 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
             refreshAndFinish(emptyList(), response.getFailures(), response.isTimedOut());
             return;
         }
-        long total = response.getTotalHits();
-        if (mainRequest.getMaxDocs() > 0) {
-            total = min(total, mainRequest.getMaxDocs());
-        }
+        long total = getTotal(response);
         worker.setTotal(total);
         AbstractRunnable prepareBulkRequestRunnable = new AbstractRunnable() {
             @Override
@@ -308,6 +305,14 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
         worker.delayPrepareBulkRequest(threadPool, lastBatchStartTimeNS, lastBatchSize, prepareBulkRequestRunnable);
     }
 
+    private long getTotal(ScrollableHitSource.Response response) {
+        long total = response.getTotalHits();
+        if (mainRequest.getMaxDocs() > 0) {
+            total = min(total, mainRequest.getMaxDocs());
+        }
+        return total;
+    }
+
     /**
      * Prepare the bulk request. Called on the generic thread pool after some preflight checks have been done one the SearchResponse and any
      * delay has been slept. Uses the generic thread pool because reindex is rare enough not to need its own thread pool and because the
@@ -325,16 +330,7 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
             return;
         }
         worker.countBatch();
-        final List<? extends ScrollableHitSource.Hit> hits;
-
-        if (mainRequest.getMaxDocs() != MAX_DOCS_ALL_MATCHES) {
-            // Truncate the hits if we have more than the request max docs
-            long remainingDocsToProcess = max(0, mainRequest.getMaxDocs() - worker.getSuccessfullyProcessed());
-            hits = remainingDocsToProcess < asyncResponse.remainingHits() ? asyncResponse.consumeHits((int) remainingDocsToProcess)
-                                                                          : asyncResponse.consumeRemainingHits();
-        } else {
-            hits = asyncResponse.consumeRemainingHits();
-        }
+        final List<? extends ScrollableHitSource.Hit> hits = getList(asyncResponse);
 
         BulkRequest request = buildBulk(hits);
         if (request.requests().isEmpty()) {
@@ -347,6 +343,20 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
         request.timeout(mainRequest.getTimeout());
         request.waitForActiveShards(mainRequest.getWaitForActiveShards());
         sendBulkRequest(request, () -> notifyDone(thisBatchStartTimeNS, asyncResponse, request.requests().size()));
+    }
+
+    private List<? extends ScrollableHitSource.Hit> getList(org.elasticsearch.index.reindex.AbstractAsyncBulkByScrollAction.ScrollConsumableHitsResponse asyncResponse) {
+        final List<? extends ScrollableHitSource.Hit> hits;
+
+        if (mainRequest.getMaxDocs() != MAX_DOCS_ALL_MATCHES) {
+            // Truncate the hits if we have more than the request max docs
+            long remainingDocsToProcess = max(0, mainRequest.getMaxDocs() - worker.getSuccessfullyProcessed());
+            hits = remainingDocsToProcess < asyncResponse.remainingHits() ? asyncResponse.consumeHits((int) remainingDocsToProcess)
+                                                                          : asyncResponse.consumeRemainingHits();
+        } else {
+            hits = asyncResponse.consumeRemainingHits();
+        }
+        return hits;
     }
 
     /**

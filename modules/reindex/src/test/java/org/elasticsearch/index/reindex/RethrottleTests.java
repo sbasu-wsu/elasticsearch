@@ -140,10 +140,7 @@ public class RethrottleTests extends ReindexTestCase {
                     assertThat(slice.getRequestsPerSecond(), both(greaterThanOrEqualTo(minExpectedSliceRequestsPerSecond))
                             .and(lessThanOrEqualTo(maxExpectedSliceRequestsPerSecond)));
                 }
-                if (minExpectedSliceRequestsPerSecond <= slice.getRequestsPerSecond()
-                        && slice.getRequestsPerSecond() <= maxExpectedSliceRequestsPerSecond) {
-                    oneSliceRethrottled = true;
-                }
+                oneSliceRethrottled = isOneSliceRethrottled(maxExpectedSliceRequestsPerSecond, minExpectedSliceRequestsPerSecond, oneSliceRethrottled, slice);
                 totalRequestsPerSecond += slice.getRequestsPerSecond();
             }
             assertTrue("At least one slice must be rethrottled", oneSliceRethrottled);
@@ -163,6 +160,14 @@ public class RethrottleTests extends ReindexTestCase {
         // It'd be bad if the entire require completed in a single batch. The test wouldn't be testing anything.
         assertThat("Entire request completed in a single batch. This may invalidate the test as throttling is done between batches.",
                 response.getBatches(), greaterThanOrEqualTo(numSlices));
+    }
+
+    private boolean isOneSliceRethrottled(float maxExpectedSliceRequestsPerSecond, float minExpectedSliceRequestsPerSecond, boolean oneSliceRethrottled, BulkByScrollTask.Status slice) {
+        if (minExpectedSliceRequestsPerSecond <= slice.getRequestsPerSecond()
+                && slice.getRequestsPerSecond() <= maxExpectedSliceRequestsPerSecond) {
+            oneSliceRethrottled = true;
+        }
+        return oneSliceRethrottled;
     }
 
     private ListTasksResponse rethrottleTask(TaskId taskToRethrottle, float newRequestsPerSecond) throws Exception {
