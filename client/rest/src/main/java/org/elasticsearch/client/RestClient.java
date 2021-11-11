@@ -293,7 +293,7 @@ public class RestClient implements Closeable {
             }
             throw new IllegalStateException("unexpected exception type: must be either RuntimeException or IOException", cause);
         }
-        ResponseOrResponseException responseOrResponseException = convertResponse(request, context.node, httpResponse);
+        ResponseOrResponseException responseOrResponseException = request.convertResponse(context.node, httpResponse);
         if (responseOrResponseException.responseException == null) {
             return responseOrResponseException.response;
         }
@@ -302,40 +302,6 @@ public class RestClient implements Closeable {
             return performRequest(tuple, request, responseOrResponseException.responseException);
         }
         throw responseOrResponseException.responseException;
-    }
-
-    private ResponseOrResponseException convertResponse(InternalRequest request, Node node, HttpResponse httpResponse) throws IOException {
-        RequestLogger.logResponse(logger, request.httpRequest, node.getHost(), httpResponse);
-        int statusCode = httpResponse.getStatusLine().getStatusCode();
-
-        HttpEntity entity = httpResponse.getEntity();
-        if (entity != null) {
-            Header header = entity.getContentEncoding();
-            if (header != null && "gzip".equals(header.getValue())) {
-                // Decompress and cleanup response headers
-                httpResponse.setEntity(new GzipDecompressingEntity(entity));
-                httpResponse.removeHeaders(HTTP.CONTENT_ENCODING);
-                httpResponse.removeHeaders(HTTP.CONTENT_LEN);
-            }
-        }
-
-        Response response = new Response(request.httpRequest.getRequestLine(), node.getHost(), httpResponse);
-        if (isSuccessfulResponse(statusCode) || request.ignoreErrorCodes.contains(response.getStatusLine().getStatusCode())) {
-            onResponse(node);
-            if (request.warningsHandler.warningsShouldFailRequest(response.getWarnings())) {
-                throw new WarningFailureException(response);
-            }
-            return new ResponseOrResponseException(response);
-        }
-        ResponseException responseException = new ResponseException(response);
-        if (isRetryStatus(statusCode)) {
-            //mark host dead and retry against next one
-            onFailure(node);
-            return new ResponseOrResponseException(responseException);
-        }
-        //mark host alive and don't retry, as the error should be a request problem
-        onResponse(node);
-        throw responseException;
     }
 
     /**
@@ -375,7 +341,7 @@ public class RestClient implements Closeable {
                 @Override
                 public void completed(HttpResponse httpResponse) {
                     try {
-                        ResponseOrResponseException responseOrResponseException = convertResponse(request, context.node, httpResponse);
+                        ResponseOrResponseException responseOrResponseException = request.convertResponse(context.node, httpResponse);
                         if (responseOrResponseException.responseException == null) {
                             listener.onSuccess(responseOrResponseException.response);
                         } else {
@@ -782,6 +748,40 @@ public class RestClient implements Closeable {
         RequestContext createContextForNextAttempt(Node node, AuthCache authCache) {
             this.httpRequest.reset();
             return new RequestContext(this, node, authCache);
+        }
+
+        ResponseOrResponseException convertResponse(Node node, HttpResponse httpResponse) throws IOException {
+            RequestLogger.logResponse(logger, httpRequest, node.getHost(), httpResponse);
+            int statusCode = httpResponse.getStatusLine().getStatusCode();
+
+            HttpEntity entity = httpResponse.getEntity();
+            if (entity != null) {
+                Header header = entity.getContentEncoding();
+                if (header != null && "gzip".equals(header.getValue())) {
+                    // Decompress and cleanup response headers
+                    httpResponse.setEntity(new GzipDecompressingEntity(entity));
+                    httpResponse.removeHeaders(HTTP.CONTENT_ENCODING);
+                    httpResponse.removeHeaders(HTTP.CONTENT_LEN);
+                }
+            }
+
+            Response response = new Response(httpRequest.getRequestLine(), node.getHost(), httpResponse);
+            if (isSuccessfulResponse(statusCode) || ignoreErrorCodes.contains(response.getStatusLine().getStatusCode())) {
+                onResponse(node);
+                if (this.warningsHandler.warningsShouldFailRequest(response.getWarnings())) {
+                    throw new WarningFailureException(response);
+                }
+                return new ResponseOrResponseException(response);
+            }
+            ResponseException responseException = new ResponseException(response);
+            if (isRetryStatus(statusCode)) {
+                //mark host dead and retry against next one
+                onFailure(node);
+                return new ResponseOrResponseException(responseException);
+            }
+            //mark host alive and don't retry, as the error should be a request problem
+            onResponse(node);
+            throw responseException;
         }
     }
 
