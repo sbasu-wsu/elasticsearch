@@ -35,13 +35,7 @@ import java.util.Collections;
  * See the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/rollup-apis.html">
  * X-Pack Rollup APIs on elastic.co</a> for more information.
  */
-public class RollupClient {
-
-    private final RestHighLevelClient restHighLevelClient;
-
-    RollupClient(final RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = restHighLevelClient;
-    }
+public class RollupClient extends RestHighLevelClient{
 
     /**
      * Put a rollup job into the cluster
@@ -53,7 +47,7 @@ public class RollupClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public AcknowledgedResponse putRollupJob(PutRollupJobRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request,
+        return performRequestAndParseEntity(request,
             RollupRequestConverters::putJob,
             options,
             AcknowledgedResponse::fromXContent,
@@ -71,7 +65,7 @@ public class RollupClient {
      */
     public Cancellable putRollupJobAsync(PutRollupJobRequest request, RequestOptions options,
                                          ActionListener<AcknowledgedResponse> listener) {
-       return restHighLevelClient.performRequestAsyncAndParseEntity(request,
+       return performRequestAsyncAndParseEntity(request,
             RollupRequestConverters::putJob,
             options,
             AcknowledgedResponse::fromXContent,
@@ -88,7 +82,7 @@ public class RollupClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public StartRollupJobResponse startRollupJob(StartRollupJobRequest request, RequestOptions options)  throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request,
+        return performRequestAndParseEntity(request,
             RollupRequestConverters::startJob,
             options,
             StartRollupJobResponse::fromXContent,
@@ -106,7 +100,7 @@ public class RollupClient {
      */
     public Cancellable startRollupJobAsync(StartRollupJobRequest request, RequestOptions options,
                                            ActionListener<StartRollupJobResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request,
+        return performRequestAsyncAndParseEntity(request,
             RollupRequestConverters::startJob,
             options,
             StartRollupJobResponse::fromXContent,
@@ -123,7 +117,7 @@ public class RollupClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public StopRollupJobResponse stopRollupJob(StopRollupJobRequest request, RequestOptions options)  throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request,
+        return performRequestAndParseEntity(request,
             RollupRequestConverters::stopJob,
             options,
             StopRollupJobResponse::fromXContent,
@@ -141,7 +135,7 @@ public class RollupClient {
      */
     public Cancellable stopRollupJobAsync(StopRollupJobRequest request, RequestOptions options,
                                           ActionListener<StopRollupJobResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request,
+        return performRequestAsyncAndParseEntity(request,
             RollupRequestConverters::stopJob,
             options,
             StopRollupJobResponse::fromXContent,
@@ -158,7 +152,7 @@ public class RollupClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public AcknowledgedResponse deleteRollupJob(DeleteRollupJobRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request,
+        return performRequestAndParseEntity(request,
             RollupRequestConverters::deleteJob,
             options,
             AcknowledgedResponse::fromXContent,
@@ -176,7 +170,7 @@ public class RollupClient {
     public Cancellable deleteRollupJobAsync(DeleteRollupJobRequest request,
                                             RequestOptions options,
                                             ActionListener<AcknowledgedResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request,
+        return performRequestAsyncAndParseEntity(request,
             RollupRequestConverters::deleteJob,
             options,
             AcknowledgedResponse::fromXContent,
@@ -193,7 +187,7 @@ public class RollupClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetRollupJobResponse getRollupJob(GetRollupJobRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request,
+        return performRequestAndParseEntity(request,
             RollupRequestConverters::getJob,
             options,
             GetRollupJobResponse::fromXContent,
@@ -211,7 +205,7 @@ public class RollupClient {
      */
     public Cancellable getRollupJobAsync(GetRollupJobRequest request, RequestOptions options,
                                          ActionListener<GetRollupJobResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request,
+        return performRequestAsyncAndParseEntity(request,
             RollupRequestConverters::getJob,
             options,
             GetRollupJobResponse::fromXContent,
@@ -228,7 +222,7 @@ public class RollupClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public SearchResponse search(SearchRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
                 request,
                 RollupRequestConverters::search,
                 options,
@@ -246,7 +240,7 @@ public class RollupClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable searchAsync(SearchRequest request, RequestOptions options, ActionListener<SearchResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
                 request,
                 RollupRequestConverters::search,
                 options,
@@ -265,7 +259,7 @@ public class RollupClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetRollupCapsResponse getRollupCapabilities(GetRollupCapsRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request,
+        return performRequestAndParseEntity(request,
             RollupRequestConverters::getRollupCaps,
             options,
             GetRollupCapsResponse::fromXContent,
@@ -283,7 +277,7 @@ public class RollupClient {
      */
     public Cancellable getRollupCapabilitiesAsync(GetRollupCapsRequest request, RequestOptions options,
                                                   ActionListener<GetRollupCapsResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request,
+        return performRequestAsyncAndParseEntity(request,
             RollupRequestConverters::getRollupCaps,
             options,
             GetRollupCapsResponse::fromXContent,
@@ -302,7 +296,7 @@ public class RollupClient {
      */
     public GetRollupIndexCapsResponse getRollupIndexCapabilities(GetRollupIndexCapsRequest request,
                                                                  RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request,
+        return performRequestAndParseEntity(request,
             RollupRequestConverters::getRollupIndexCaps,
             options,
             GetRollupIndexCapsResponse::fromXContent,
@@ -320,7 +314,7 @@ public class RollupClient {
      */
     public Cancellable getRollupIndexCapabilitiesAsync(GetRollupIndexCapsRequest request, RequestOptions options,
                                                        ActionListener<GetRollupIndexCapsResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request,
+        return performRequestAsyncAndParseEntity(request,
             RollupRequestConverters::getRollupIndexCaps,
             options,
             GetRollupIndexCapsResponse::fromXContent,

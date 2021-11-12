@@ -24,13 +24,7 @@ import java.util.Objects;
  * See the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/searchable-snapshots-apis.html">Searchable Snapshots
  * APIs on elastic.co</a> for more information.
  */
-public class SearchableSnapshotsClient {
-
-    private RestHighLevelClient restHighLevelClient;
-
-    public SearchableSnapshotsClient(final RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = Objects.requireNonNull(restHighLevelClient);
-    }
+public class SearchableSnapshotsClient extends RestHighLevelClient{
 
     /**
      * Executes the mount snapshot API, which mounts a snapshot as a searchable snapshot.
@@ -44,7 +38,7 @@ public class SearchableSnapshotsClient {
      * @throws IOException if an I/O exception occurred sending the request, or receiving or parsing the response
      */
     public RestoreSnapshotResponse mountSnapshot(final MountSnapshotRequest request, final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
             request,
             SearchableSnapshotsRequestConverters::mountSnapshot,
             options,
@@ -66,7 +60,7 @@ public class SearchableSnapshotsClient {
         final RequestOptions options,
         final ActionListener<RestoreSnapshotResponse> listener)
     {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             request,
             SearchableSnapshotsRequestConverters::mountSnapshot,
             options,
@@ -88,7 +82,7 @@ public class SearchableSnapshotsClient {
      * @throws IOException if an I/O exception occurred sending the request, or receiving or parsing the response
      */
     public CachesStatsResponse cacheStats(final CachesStatsRequest request, final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
             request,
             SearchableSnapshotsRequestConverters::cacheStats,
             options,
@@ -110,7 +104,7 @@ public class SearchableSnapshotsClient {
         final RequestOptions options,
         final ActionListener<CachesStatsResponse> listener)
     {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             request,
             SearchableSnapshotsRequestConverters::cacheStats,
             options,

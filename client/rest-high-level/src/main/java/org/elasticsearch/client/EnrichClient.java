@@ -28,13 +28,8 @@ import java.util.Collections;
  * See the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/enrich-apis.html">
  * X-Pack Enrich Policy APIs on elastic.co</a> for more information.
  */
-public final class EnrichClient {
+public final class EnrichClient extends RestHighLevelClient{
 
-    private final RestHighLevelClient restHighLevelClient;
-
-    EnrichClient(RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = restHighLevelClient;
-    }
 
     /**
      * Executes the put policy api, which stores an enrich policy.
@@ -48,7 +43,7 @@ public final class EnrichClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public AcknowledgedResponse putPolicy(PutPolicyRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
             request,
             EnrichRequestConverters::putPolicy,
             options,
@@ -71,7 +66,7 @@ public final class EnrichClient {
     public Cancellable putPolicyAsync(PutPolicyRequest request,
                                       RequestOptions options,
                                       ActionListener<AcknowledgedResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             request,
             EnrichRequestConverters::putPolicy,
             options,
@@ -93,7 +88,7 @@ public final class EnrichClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public AcknowledgedResponse deletePolicy(DeletePolicyRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
             request,
             EnrichRequestConverters::deletePolicy,
             options,
@@ -116,7 +111,7 @@ public final class EnrichClient {
     public Cancellable deletePolicyAsync(DeletePolicyRequest request,
                                          RequestOptions options,
                                          ActionListener<AcknowledgedResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             request,
             EnrichRequestConverters::deletePolicy,
             options,
@@ -138,7 +133,7 @@ public final class EnrichClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetPolicyResponse getPolicy(GetPolicyRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
             request,
             EnrichRequestConverters::getPolicy,
             options,
@@ -161,7 +156,7 @@ public final class EnrichClient {
     public Cancellable getPolicyAsync(GetPolicyRequest request,
                                RequestOptions options,
                                ActionListener<GetPolicyResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             request,
             EnrichRequestConverters::getPolicy,
             options,
@@ -183,7 +178,7 @@ public final class EnrichClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public StatsResponse stats(StatsRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
             request,
             EnrichRequestConverters::stats,
             options,
@@ -206,7 +201,7 @@ public final class EnrichClient {
     public Cancellable statsAsync(StatsRequest request,
                                   RequestOptions options,
                                   ActionListener<StatsResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             request,
             EnrichRequestConverters::stats,
             options,
@@ -228,7 +223,7 @@ public final class EnrichClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public ExecutePolicyResponse executePolicy(ExecutePolicyRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
             request,
             EnrichRequestConverters::executePolicy,
             options,
@@ -251,7 +246,7 @@ public final class EnrichClient {
     public Cancellable executePolicyAsync(ExecutePolicyRequest request,
                                           RequestOptions options,
                                           ActionListener<ExecutePolicyResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             request,
             EnrichRequestConverters::executePolicy,
             options,

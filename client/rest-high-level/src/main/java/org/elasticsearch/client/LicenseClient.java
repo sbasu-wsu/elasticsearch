@@ -46,13 +46,7 @@ import static java.util.Collections.singleton;
  * See the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/licensing-apis.html">
  * X-Pack Licensing APIs on elastic.co</a> for more information.
  */
-public final class LicenseClient {
-
-    private final RestHighLevelClient restHighLevelClient;
-
-    LicenseClient(RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = restHighLevelClient;
-    }
+public final class LicenseClient extends RestHighLevelClient{
 
     /**
      * Updates license for the cluster.
@@ -61,7 +55,7 @@ public final class LicenseClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public PutLicenseResponse putLicense(PutLicenseRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, LicenseRequestConverters::putLicense, options,
+        return performRequestAndParseEntity(request, LicenseRequestConverters::putLicense, options,
             PutLicenseResponse::fromXContent, emptySet());
     }
 
@@ -72,7 +66,7 @@ public final class LicenseClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable putLicenseAsync(PutLicenseRequest request, RequestOptions options, ActionListener<PutLicenseResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, LicenseRequestConverters::putLicense, options,
+        return performRequestAsyncAndParseEntity(request, LicenseRequestConverters::putLicense, options,
             PutLicenseResponse::fromXContent, listener, emptySet());
     }
 
@@ -83,7 +77,7 @@ public final class LicenseClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetLicenseResponse getLicense(GetLicenseRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequest(request, LicenseRequestConverters::getLicense, options,
+        return performRequest(request, LicenseRequestConverters::getLicense, options,
             response -> new GetLicenseResponse(convertResponseToJson(response)), emptySet());
     }
 
@@ -94,7 +88,7 @@ public final class LicenseClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable getLicenseAsync(GetLicenseRequest request, RequestOptions options, ActionListener<GetLicenseResponse> listener) {
-        return restHighLevelClient.performRequestAsync(request, LicenseRequestConverters::getLicense, options,
+        return performRequestAsync(request, LicenseRequestConverters::getLicense, options,
             response -> new GetLicenseResponse(convertResponseToJson(response)), listener, emptySet());
     }
 
@@ -105,7 +99,7 @@ public final class LicenseClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public AcknowledgedResponse deleteLicense(DeleteLicenseRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, LicenseRequestConverters::deleteLicense, options,
+        return performRequestAndParseEntity(request, LicenseRequestConverters::deleteLicense, options,
             AcknowledgedResponse::fromXContent, emptySet());
     }
 
@@ -117,7 +111,7 @@ public final class LicenseClient {
      */
     public Cancellable deleteLicenseAsync(DeleteLicenseRequest request, RequestOptions options,
                                           ActionListener<AcknowledgedResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request,
+        return performRequestAsyncAndParseEntity(request,
             LicenseRequestConverters::deleteLicense, options,
             AcknowledgedResponse::fromXContent, listener, emptySet());
     }
@@ -129,7 +123,7 @@ public final class LicenseClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public StartTrialResponse startTrial(StartTrialRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, LicenseRequestConverters::startTrial, options,
+        return performRequestAndParseEntity(request, LicenseRequestConverters::startTrial, options,
             StartTrialResponse::fromXContent, singleton(403));
     }
 
@@ -143,7 +137,7 @@ public final class LicenseClient {
                                        RequestOptions options,
                                        ActionListener<StartTrialResponse> listener) {
 
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, LicenseRequestConverters::startTrial, options,
+        return performRequestAsyncAndParseEntity(request, LicenseRequestConverters::startTrial, options,
             StartTrialResponse::fromXContent, listener, singleton(403));
     }
 
@@ -154,7 +148,7 @@ public final class LicenseClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public StartBasicResponse startBasic(StartBasicRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, LicenseRequestConverters::startBasic, options,
+        return performRequestAndParseEntity(request, LicenseRequestConverters::startBasic, options,
             StartBasicResponse::fromXContent, emptySet());
     }
 
@@ -166,7 +160,7 @@ public final class LicenseClient {
      */
     public Cancellable startBasicAsync(StartBasicRequest request, RequestOptions options,
                                        ActionListener<StartBasicResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, LicenseRequestConverters::startBasic, options,
+        return performRequestAsyncAndParseEntity(request, LicenseRequestConverters::startBasic, options,
             StartBasicResponse::fromXContent, listener, emptySet());
     }
 
@@ -177,7 +171,7 @@ public final class LicenseClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetTrialStatusResponse getTrialStatus(RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(Validatable.EMPTY,
+        return performRequestAndParseEntity(Validatable.EMPTY,
             request -> LicenseRequestConverters.getLicenseTrialStatus(), options, GetTrialStatusResponse::fromXContent, emptySet());
     }
 
@@ -188,7 +182,7 @@ public final class LicenseClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetBasicStatusResponse getBasicStatus(RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(Validatable.EMPTY,
+        return performRequestAndParseEntity(Validatable.EMPTY,
             request -> LicenseRequestConverters.getLicenseBasicStatus(), options, GetBasicStatusResponse::fromXContent, emptySet());
     }
 

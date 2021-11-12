@@ -35,12 +35,12 @@ import static java.util.Collections.singleton;
  * <p>
  * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster.html">Cluster API on elastic.co</a>
  */
-public final class ClusterClient {
-    private final RestHighLevelClient restHighLevelClient;
+public final class ClusterClient extends RestHighLevelClient{
+//    private final RestHighLevelClient restHighLevelClient;
 
-    ClusterClient(RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = restHighLevelClient;
-    }
+//    ClusterClient(RestHighLevelClient restHighLevelClient) {
+//        this.restHighLevelClient = restHighLevelClient;
+//    }
 
     /**
      * Updates cluster wide specific settings using the Cluster Update Settings API.
@@ -53,7 +53,7 @@ public final class ClusterClient {
      */
     public ClusterUpdateSettingsResponse putSettings(ClusterUpdateSettingsRequest clusterUpdateSettingsRequest, RequestOptions options)
             throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(clusterUpdateSettingsRequest, ClusterRequestConverters::clusterPutSettings,
+        return performRequestAndParseEntity(clusterUpdateSettingsRequest, ClusterRequestConverters::clusterPutSettings,
                 options, ClusterUpdateSettingsResponse::fromXContent, emptySet());
     }
 
@@ -68,7 +68,7 @@ public final class ClusterClient {
      */
     public Cancellable putSettingsAsync(ClusterUpdateSettingsRequest clusterUpdateSettingsRequest, RequestOptions options,
                                         ActionListener<ClusterUpdateSettingsResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(clusterUpdateSettingsRequest,
+        return performRequestAsyncAndParseEntity(clusterUpdateSettingsRequest,
                 ClusterRequestConverters::clusterPutSettings,
                 options, ClusterUpdateSettingsResponse::fromXContent, listener, emptySet());
     }
@@ -84,7 +84,7 @@ public final class ClusterClient {
      */
     public ClusterGetSettingsResponse getSettings(ClusterGetSettingsRequest clusterGetSettingsRequest, RequestOptions options)
         throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(clusterGetSettingsRequest, ClusterRequestConverters::clusterGetSettings,
+        return performRequestAndParseEntity(clusterGetSettingsRequest, ClusterRequestConverters::clusterGetSettings,
             options, ClusterGetSettingsResponse::fromXContent, emptySet());
     }
 
@@ -99,7 +99,7 @@ public final class ClusterClient {
      */
     public Cancellable getSettingsAsync(ClusterGetSettingsRequest clusterGetSettingsRequest, RequestOptions options,
                                         ActionListener<ClusterGetSettingsResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             clusterGetSettingsRequest, ClusterRequestConverters::clusterGetSettings,
             options, ClusterGetSettingsResponse::fromXContent, listener, emptySet());
     }
@@ -116,7 +116,7 @@ public final class ClusterClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public ClusterHealthResponse health(ClusterHealthRequest healthRequest, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(healthRequest, ClusterRequestConverters::clusterHealth, options,
+        return performRequestAndParseEntity(healthRequest, ClusterRequestConverters::clusterHealth, options,
                 ClusterHealthResponse::fromXContent, singleton(RestStatus.REQUEST_TIMEOUT.getStatus()));
     }
 
@@ -132,7 +132,7 @@ public final class ClusterClient {
      */
     public Cancellable healthAsync(ClusterHealthRequest healthRequest, RequestOptions options,
                                    ActionListener<ClusterHealthResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(healthRequest, ClusterRequestConverters::clusterHealth, options,
+        return performRequestAsyncAndParseEntity(healthRequest, ClusterRequestConverters::clusterHealth, options,
                 ClusterHealthResponse::fromXContent, listener, singleton(RestStatus.REQUEST_TIMEOUT.getStatus()));
     }
 
@@ -146,7 +146,7 @@ public final class ClusterClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public RemoteInfoResponse remoteInfo(RemoteInfoRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, ClusterRequestConverters::remoteInfo, options,
+        return performRequestAndParseEntity(request, ClusterRequestConverters::remoteInfo, options,
                 RemoteInfoResponse::fromXContent, singleton(RestStatus.REQUEST_TIMEOUT.getStatus()));
     }
 
@@ -161,7 +161,7 @@ public final class ClusterClient {
      */
     public Cancellable remoteInfoAsync(RemoteInfoRequest request, RequestOptions options,
                                        ActionListener<RemoteInfoResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, ClusterRequestConverters::remoteInfo, options,
+        return performRequestAsyncAndParseEntity(request, ClusterRequestConverters::remoteInfo, options,
                 RemoteInfoResponse::fromXContent, listener, singleton(RestStatus.REQUEST_TIMEOUT.getStatus()));
     }
 
@@ -173,7 +173,7 @@ public final class ClusterClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public AcknowledgedResponse deleteComponentTemplate(DeleteComponentTemplateRequest req, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(req, ClusterRequestConverters::deleteComponentTemplate,
+        return performRequestAndParseEntity(req, ClusterRequestConverters::deleteComponentTemplate,
             options, AcknowledgedResponse::fromXContent, emptySet());
     }
 
@@ -187,7 +187,7 @@ public final class ClusterClient {
      */
     public Cancellable deleteComponentTemplateAsync(DeleteComponentTemplateRequest request, RequestOptions options,
                                                     ActionListener<AcknowledgedResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, ClusterRequestConverters::deleteComponentTemplate,
+        return performRequestAsyncAndParseEntity(request, ClusterRequestConverters::deleteComponentTemplate,
             options, AcknowledgedResponse::fromXContent, listener, emptySet());
     }
 
@@ -201,7 +201,7 @@ public final class ClusterClient {
      */
     public AcknowledgedResponse putComponentTemplate(PutComponentTemplateRequest putComponentTemplateRequest,
                                                      RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(putComponentTemplateRequest, ClusterRequestConverters::putComponentTemplate,
+        return performRequestAndParseEntity(putComponentTemplateRequest, ClusterRequestConverters::putComponentTemplate,
             options, AcknowledgedResponse::fromXContent, emptySet());
     }
 
@@ -215,7 +215,7 @@ public final class ClusterClient {
      */
     public Cancellable putComponentTemplateAsync(PutComponentTemplateRequest putComponentTemplateRequest,
                                                  RequestOptions options, ActionListener<AcknowledgedResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(putComponentTemplateRequest,
+        return performRequestAsyncAndParseEntity(putComponentTemplateRequest,
             ClusterRequestConverters::putComponentTemplate, options, AcknowledgedResponse::fromXContent, listener, emptySet());
     }
 
@@ -228,7 +228,7 @@ public final class ClusterClient {
      */
     public GetComponentTemplatesResponse getComponentTemplate(GetComponentTemplatesRequest getComponentTemplatesRequest,
                                                               RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(getComponentTemplatesRequest,
+        return performRequestAndParseEntity(getComponentTemplatesRequest,
             ClusterRequestConverters::getComponentTemplates, options, GetComponentTemplatesResponse::fromXContent, emptySet());
     }
 
@@ -241,7 +241,7 @@ public final class ClusterClient {
      */
     public Cancellable getComponentTemplateAsync(GetComponentTemplatesRequest getComponentTemplatesRequest, RequestOptions options,
                                                  ActionListener<GetComponentTemplatesResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(getComponentTemplatesRequest,
+        return performRequestAsyncAndParseEntity(getComponentTemplatesRequest,
             ClusterRequestConverters::getComponentTemplates, options, GetComponentTemplatesResponse::fromXContent, listener, emptySet());
     }
 
@@ -255,7 +255,7 @@ public final class ClusterClient {
      */
     public boolean existsComponentTemplate(ComponentTemplatesExistRequest componentTemplatesRequest,
                                            RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequest(componentTemplatesRequest,
+        return performRequest(componentTemplatesRequest,
             ClusterRequestConverters::componentTemplatesExist, options, RestHighLevelClient::convertExistsResponse, emptySet());
     }
 
@@ -270,7 +270,7 @@ public final class ClusterClient {
                                                     RequestOptions options,
                                                     ActionListener<Boolean> listener) {
 
-        return restHighLevelClient.performRequestAsync(componentTemplatesRequest,
+        return performRequestAsync(componentTemplatesRequest,
             ClusterRequestConverters::componentTemplatesExist, options, RestHighLevelClient::convertExistsResponse, listener, emptySet());
     }
 }

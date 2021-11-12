@@ -93,13 +93,7 @@ import static java.util.Collections.singleton;
  * <p>
  * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api.html">Security APIs on elastic.co</a>
  */
-public final class SecurityClient {
-
-    private final RestHighLevelClient restHighLevelClient;
-
-    SecurityClient(RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = restHighLevelClient;
-    }
+public final class SecurityClient extends RestHighLevelClient{
 
     /**
      * Get a user, or list of users, in the native realm synchronously.
@@ -111,7 +105,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetUsersResponse getUsers(GetUsersRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::getUsers, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::getUsers, options,
             GetUsersResponse::fromXContent, emptySet());
     }
 
@@ -125,7 +119,7 @@ public final class SecurityClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable getUsersAsync(GetUsersRequest request, RequestOptions options, ActionListener<GetUsersResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getUsers, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getUsers, options,
             GetUsersResponse::fromXContent, listener, emptySet());
     }
 
@@ -140,7 +134,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public PutUserResponse putUser(PutUserRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::putUser, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::putUser, options,
             PutUserResponse::fromXContent, emptySet());
     }
 
@@ -155,7 +149,7 @@ public final class SecurityClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable putUserAsync(PutUserRequest request, RequestOptions options, ActionListener<PutUserResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::putUser, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::putUser, options,
             PutUserResponse::fromXContent, listener, emptySet());
     }
 
@@ -169,7 +163,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public DeleteUserResponse deleteUser(DeleteUserRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::deleteUser, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::deleteUser, options,
             DeleteUserResponse::fromXContent, singleton(404));
     }
 
@@ -183,7 +177,7 @@ public final class SecurityClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable deleteUserAsync(DeleteUserRequest request, RequestOptions options, ActionListener<DeleteUserResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::deleteUser, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::deleteUser, options,
             DeleteUserResponse::fromXContent, listener, singleton(404));
     }
 
@@ -197,7 +191,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public PutRoleMappingResponse putRoleMapping(final PutRoleMappingRequest request, final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::putRoleMapping, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::putRoleMapping, options,
                 PutRoleMappingResponse::fromXContent, emptySet());
     }
 
@@ -212,7 +206,7 @@ public final class SecurityClient {
      */
     public Cancellable putRoleMappingAsync(final PutRoleMappingRequest request, final RequestOptions options,
                                            final ActionListener<PutRoleMappingResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::putRoleMapping, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::putRoleMapping, options,
                 PutRoleMappingResponse::fromXContent, listener, emptySet());
     }
 
@@ -231,7 +225,7 @@ public final class SecurityClient {
      */
     public GetRoleMappingsResponse getRoleMappings(final GetRoleMappingsRequest request,
                                                    final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::getRoleMappings,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::getRoleMappings,
             options, GetRoleMappingsResponse::fromXContent, emptySet());
     }
 
@@ -248,7 +242,7 @@ public final class SecurityClient {
      */
     public Cancellable getRoleMappingsAsync(final GetRoleMappingsRequest request, final RequestOptions options,
                                             final ActionListener<GetRoleMappingsResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getRoleMappings,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getRoleMappings,
                 options, GetRoleMappingsResponse::fromXContent, listener, emptySet());
     }
 
@@ -263,7 +257,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public boolean enableUser(EnableUserRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequest(request, SecurityRequestConverters::enableUser, options,
+        return performRequest(request, SecurityRequestConverters::enableUser, options,
             RestHighLevelClient::convertExistsResponse, emptySet());
     }
 
@@ -295,7 +289,7 @@ public final class SecurityClient {
      */
     public Cancellable enableUserAsync(EnableUserRequest request, RequestOptions options,
                                        ActionListener<Boolean> listener) {
-        return restHighLevelClient.performRequestAsync(request, SecurityRequestConverters::enableUser, options,
+        return performRequestAsync(request, SecurityRequestConverters::enableUser, options,
             RestHighLevelClient::convertExistsResponse, listener, emptySet());
     }
 
@@ -327,7 +321,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public boolean disableUser(DisableUserRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequest(request, SecurityRequestConverters::disableUser, options,
+        return performRequest(request, SecurityRequestConverters::disableUser, options,
             RestHighLevelClient::convertExistsResponse, emptySet());
     }
 
@@ -359,7 +353,7 @@ public final class SecurityClient {
      */
     public Cancellable disableUserAsync(DisableUserRequest request, RequestOptions options,
                                         ActionListener<Boolean> listener) {
-        return restHighLevelClient.performRequestAsync(request, SecurityRequestConverters::disableUser, options,
+        return performRequestAsync(request, SecurityRequestConverters::disableUser, options,
             RestHighLevelClient::convertExistsResponse, listener, emptySet());
     }
 
@@ -389,7 +383,7 @@ public final class SecurityClient {
      * @return the responsee from the authenticate user call
      */
     public AuthenticateResponse authenticate(RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(AuthenticateRequest.INSTANCE, AuthenticateRequest::getRequest, options,
+        return performRequestAndParseEntity(AuthenticateRequest.INSTANCE, AuthenticateRequest::getRequest, options,
                 AuthenticateResponse::fromXContent, emptySet());
     }
 
@@ -403,7 +397,7 @@ public final class SecurityClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable authenticateAsync(RequestOptions options, ActionListener<AuthenticateResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(AuthenticateRequest.INSTANCE, AuthenticateRequest::getRequest, options,
+        return performRequestAsyncAndParseEntity(AuthenticateRequest.INSTANCE, AuthenticateRequest::getRequest, options,
                 AuthenticateResponse::fromXContent, listener, emptySet());
     }
 
@@ -417,7 +411,7 @@ public final class SecurityClient {
      * @return the response from the has privileges call
      */
     public HasPrivilegesResponse hasPrivileges(HasPrivilegesRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::hasPrivileges, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::hasPrivileges, options,
             HasPrivilegesResponse::fromXContent, emptySet());
     }
 
@@ -432,7 +426,7 @@ public final class SecurityClient {
      */
     public Cancellable hasPrivilegesAsync(HasPrivilegesRequest request, RequestOptions options,
                                           ActionListener<HasPrivilegesResponse> listener) {
-         return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::hasPrivileges, options,
+         return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::hasPrivileges, options,
             HasPrivilegesResponse::fromXContent, listener, emptySet());
     }
 
@@ -441,7 +435,7 @@ public final class SecurityClient {
      * @param options the request options (e.g. headers), use {@link RequestOptions#DEFAULT} if nothing needs to be customized
      */
     public GetUserPrivilegesResponse getUserPrivileges(RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(GetUserPrivilegesRequest.INSTANCE, GetUserPrivilegesRequest::getRequest,
+        return performRequestAndParseEntity(GetUserPrivilegesRequest.INSTANCE, GetUserPrivilegesRequest::getRequest,
             options, GetUserPrivilegesResponse::fromXContent, emptySet());
     }
 
@@ -452,7 +446,7 @@ public final class SecurityClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable getUserPrivilegesAsync(RequestOptions options, ActionListener<GetUserPrivilegesResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             GetUserPrivilegesRequest.INSTANCE, GetUserPrivilegesRequest::getRequest,
             options, GetUserPrivilegesResponse::fromXContent, listener, emptySet());
     }
@@ -468,7 +462,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public ClearRealmCacheResponse clearRealmCache(ClearRealmCacheRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::clearRealmCache, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::clearRealmCache, options,
             ClearRealmCacheResponse::fromXContent, emptySet());
     }
 
@@ -484,7 +478,7 @@ public final class SecurityClient {
      */
     public Cancellable clearRealmCacheAsync(ClearRealmCacheRequest request, RequestOptions options,
                                             ActionListener<ClearRealmCacheResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::clearRealmCache, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::clearRealmCache, options,
             ClearRealmCacheResponse::fromXContent, listener, emptySet());
     }
 
@@ -499,7 +493,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public ClearRolesCacheResponse clearRolesCache(ClearRolesCacheRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::clearRolesCache, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::clearRolesCache, options,
             ClearRolesCacheResponse::fromXContent, emptySet());
     }
 
@@ -515,7 +509,7 @@ public final class SecurityClient {
      */
     public Cancellable clearRolesCacheAsync(ClearRolesCacheRequest request, RequestOptions options,
                                             ActionListener<ClearRolesCacheResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::clearRolesCache, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::clearRolesCache, options,
             ClearRolesCacheResponse::fromXContent, listener, emptySet());
     }
 
@@ -531,7 +525,7 @@ public final class SecurityClient {
      */
     public ClearPrivilegesCacheResponse clearPrivilegesCache(ClearPrivilegesCacheRequest request,
                                                              RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::clearPrivilegesCache, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::clearPrivilegesCache, options,
             ClearPrivilegesCacheResponse::fromXContent, emptySet());
     }
 
@@ -547,7 +541,7 @@ public final class SecurityClient {
      */
     public Cancellable clearPrivilegesCacheAsync(ClearPrivilegesCacheRequest request, RequestOptions options,
                                                  ActionListener<ClearPrivilegesCacheResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::clearPrivilegesCache, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::clearPrivilegesCache, options,
             ClearPrivilegesCacheResponse::fromXContent, listener, emptySet());
     }
 
@@ -562,7 +556,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */public ClearSecurityCacheResponse clearApiKeyCache(ClearApiKeyCacheRequest request,
                                                           RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::clearApiKeyCache, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::clearApiKeyCache, options,
             ClearSecurityCacheResponse::fromXContent, emptySet());
     }
 
@@ -578,7 +572,7 @@ public final class SecurityClient {
      */
     public Cancellable clearApiKeyCacheAsync(ClearApiKeyCacheRequest request, RequestOptions options,
                                              ActionListener<ClearSecurityCacheResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::clearApiKeyCache, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::clearApiKeyCache, options,
             ClearSecurityCacheResponse::fromXContent, listener, emptySet());
     }
 
@@ -594,7 +588,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */public ClearSecurityCacheResponse clearServiceAccountTokenCache(ClearServiceAccountTokenCacheRequest request,
                                                                        RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::clearServiceAccountTokenCache,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::clearServiceAccountTokenCache,
             options, ClearSecurityCacheResponse::fromXContent, emptySet());
     }
 
@@ -610,7 +604,7 @@ public final class SecurityClient {
      * @return cancellable that may be used to cancel the request
      */public Cancellable clearServiceAccountTokenCacheAsync(ClearServiceAccountTokenCacheRequest request, RequestOptions options,
                                                              ActionListener<ClearSecurityCacheResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::clearServiceAccountTokenCache,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::clearServiceAccountTokenCache,
             options, ClearSecurityCacheResponse::fromXContent, listener, emptySet());
     }
 
@@ -624,7 +618,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetSslCertificatesResponse getSslCertificates(RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(GetSslCertificatesRequest.INSTANCE, GetSslCertificatesRequest::getRequest,
+        return performRequestAndParseEntity(GetSslCertificatesRequest.INSTANCE, GetSslCertificatesRequest::getRequest,
             options, GetSslCertificatesResponse::fromXContent, emptySet());
     }
 
@@ -638,7 +632,7 @@ public final class SecurityClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable getSslCertificatesAsync(RequestOptions options, ActionListener<GetSslCertificatesResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             GetSslCertificatesRequest.INSTANCE, GetSslCertificatesRequest::getRequest,
             options, GetSslCertificatesResponse::fromXContent, listener, emptySet());
     }
@@ -654,7 +648,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public boolean changePassword(ChangePasswordRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequest(request, SecurityRequestConverters::changePassword, options,
+        return performRequest(request, SecurityRequestConverters::changePassword, options,
             RestHighLevelClient::convertExistsResponse, emptySet());
     }
 
@@ -686,7 +680,7 @@ public final class SecurityClient {
      */
     public Cancellable changePasswordAsync(ChangePasswordRequest request, RequestOptions options,
                                            ActionListener<Boolean> listener) {
-        return restHighLevelClient.performRequestAsync(request, SecurityRequestConverters::changePassword, options,
+        return performRequestAsync(request, SecurityRequestConverters::changePassword, options,
             RestHighLevelClient::convertExistsResponse, listener, emptySet());
     }
 
@@ -717,7 +711,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public DeleteRoleMappingResponse deleteRoleMapping(DeleteRoleMappingRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::deleteRoleMapping, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::deleteRoleMapping, options,
                 DeleteRoleMappingResponse::fromXContent, emptySet());
     }
 
@@ -732,7 +726,7 @@ public final class SecurityClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable getRolesAsync(GetRolesRequest request, RequestOptions options, ActionListener<GetRolesResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getRoles, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getRoles, options,
             GetRolesResponse::fromXContent, listener, emptySet());
     }
 
@@ -747,7 +741,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetRolesResponse getRoles(final GetRolesRequest request, final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::getRoles, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::getRoles, options,
             GetRolesResponse::fromXContent, emptySet());
     }
 
@@ -762,7 +756,7 @@ public final class SecurityClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable putRoleAsync(PutRoleRequest request, RequestOptions options, ActionListener<PutRoleResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::putRole, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::putRole, options,
                 PutRoleResponse::fromXContent, listener, emptySet());
     }
 
@@ -777,7 +771,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public PutRoleResponse putRole(final PutRoleRequest request, final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::putRole, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::putRole, options,
             PutRoleResponse::fromXContent, emptySet());
     }
 
@@ -792,7 +786,7 @@ public final class SecurityClient {
      */
     public Cancellable deleteRoleMappingAsync(DeleteRoleMappingRequest request, RequestOptions options,
                                               ActionListener<DeleteRoleMappingResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request,
+        return performRequestAsyncAndParseEntity(request,
             SecurityRequestConverters::deleteRoleMapping, options,
                 DeleteRoleMappingResponse::fromXContent, listener, emptySet());
     }
@@ -807,7 +801,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public DeleteRoleResponse deleteRole(DeleteRoleRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::deleteRole, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::deleteRole, options,
             DeleteRoleResponse::fromXContent, singleton(404));
     }
 
@@ -822,7 +816,7 @@ public final class SecurityClient {
      */
     public Cancellable deleteRoleAsync(DeleteRoleRequest request, RequestOptions options,
                                        ActionListener<DeleteRoleResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::deleteRole, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::deleteRole, options,
             DeleteRoleResponse::fromXContent, listener, singleton(404));
     }
 
@@ -837,7 +831,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public CreateTokenResponse createToken(CreateTokenRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::createToken, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::createToken, options,
             CreateTokenResponse::fromXContent, emptySet());
     }
 
@@ -853,7 +847,7 @@ public final class SecurityClient {
      */
     public Cancellable createTokenAsync(CreateTokenRequest request, RequestOptions options,
                                         ActionListener<CreateTokenResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::createToken, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::createToken, options,
             CreateTokenResponse::fromXContent, listener, emptySet());
     }
 
@@ -868,7 +862,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public InvalidateTokenResponse invalidateToken(InvalidateTokenRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::invalidateToken, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::invalidateToken, options,
             InvalidateTokenResponse::fromXContent, singleton(404));
     }
 
@@ -883,7 +877,7 @@ public final class SecurityClient {
      */
     public Cancellable invalidateTokenAsync(InvalidateTokenRequest request, RequestOptions options,
                                             ActionListener<InvalidateTokenResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::invalidateToken, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::invalidateToken, options,
             InvalidateTokenResponse::fromXContent, listener, singleton(404));
     }
 
@@ -898,7 +892,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetBuiltinPrivilegesResponse getBuiltinPrivileges(final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(GetBuiltinPrivilegesRequest.INSTANCE,
+        return performRequestAndParseEntity(GetBuiltinPrivilegesRequest.INSTANCE,
             GetBuiltinPrivilegesRequest::getRequest, options, GetBuiltinPrivilegesResponse::fromXContent, emptySet());
     }
 
@@ -913,7 +907,7 @@ public final class SecurityClient {
      */
     public Cancellable getBuiltinPrivilegesAsync(final RequestOptions options,
                                                  final ActionListener<GetBuiltinPrivilegesResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(GetBuiltinPrivilegesRequest.INSTANCE,
+        return performRequestAsyncAndParseEntity(GetBuiltinPrivilegesRequest.INSTANCE,
             GetBuiltinPrivilegesRequest::getRequest, options, GetBuiltinPrivilegesResponse::fromXContent,
             listener, emptySet());
     }
@@ -933,7 +927,7 @@ public final class SecurityClient {
      *                     parsing back the response
      */
     public GetPrivilegesResponse getPrivileges(final GetPrivilegesRequest request, final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::getPrivileges,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::getPrivileges,
             options, GetPrivilegesResponse::fromXContent, emptySet());
     }
 
@@ -950,7 +944,7 @@ public final class SecurityClient {
      */
     public Cancellable getPrivilegesAsync(final GetPrivilegesRequest request, final RequestOptions options,
                                           final ActionListener<GetPrivilegesResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getPrivileges,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getPrivileges,
             options, GetPrivilegesResponse::fromXContent, listener, emptySet());
     }
 
@@ -965,7 +959,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public PutPrivilegesResponse putPrivileges(final PutPrivilegesRequest request, final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::putPrivileges, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::putPrivileges, options,
                 PutPrivilegesResponse::fromXContent, emptySet());
     }
 
@@ -983,7 +977,7 @@ public final class SecurityClient {
      */
     public Cancellable putPrivilegesAsync(final PutPrivilegesRequest request, final RequestOptions options,
                                           final ActionListener<PutPrivilegesResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::putPrivileges, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::putPrivileges, options,
                 PutPrivilegesResponse::fromXContent, listener, emptySet());
     }
 
@@ -998,7 +992,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public DeletePrivilegesResponse deletePrivileges(DeletePrivilegesRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::deletePrivileges, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::deletePrivileges, options,
             DeletePrivilegesResponse::fromXContent, singleton(404));
     }
 
@@ -1014,7 +1008,7 @@ public final class SecurityClient {
      */
     public Cancellable deletePrivilegesAsync(DeletePrivilegesRequest request, RequestOptions options,
                                              ActionListener<DeletePrivilegesResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::deletePrivileges, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::deletePrivileges, options,
             DeletePrivilegesResponse::fromXContent, listener, singleton(404));
     }
 
@@ -1029,7 +1023,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public CreateApiKeyResponse createApiKey(final CreateApiKeyRequest request, final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::createApiKey, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::createApiKey, options,
                 CreateApiKeyResponse::fromXContent, emptySet());
     }
 
@@ -1045,7 +1039,7 @@ public final class SecurityClient {
      */
     public Cancellable createApiKeyAsync(final CreateApiKeyRequest request, final RequestOptions options,
                                          final ActionListener<CreateApiKeyResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::createApiKey, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::createApiKey, options,
                 CreateApiKeyResponse::fromXContent, listener, emptySet());
     }
 
@@ -1060,7 +1054,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetApiKeyResponse getApiKey(final GetApiKeyRequest request, final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::getApiKey, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::getApiKey, options,
                 GetApiKeyResponse::fromXContent, emptySet());
     }
 
@@ -1076,7 +1070,7 @@ public final class SecurityClient {
      */
     public Cancellable getApiKeyAsync(final GetApiKeyRequest request, final RequestOptions options,
                                       final ActionListener<GetApiKeyResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getApiKey, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getApiKey, options,
                 GetApiKeyResponse::fromXContent, listener, emptySet());
     }
 
@@ -1092,7 +1086,7 @@ public final class SecurityClient {
      */
     public InvalidateApiKeyResponse invalidateApiKey(final InvalidateApiKeyRequest request, final RequestOptions options)
             throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::invalidateApiKey, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::invalidateApiKey, options,
                 InvalidateApiKeyResponse::fromXContent, emptySet());
     }
 
@@ -1108,7 +1102,7 @@ public final class SecurityClient {
      */
     public Cancellable invalidateApiKeyAsync(final InvalidateApiKeyRequest request, final RequestOptions options,
                                              final ActionListener<InvalidateApiKeyResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::invalidateApiKey, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::invalidateApiKey, options,
                 InvalidateApiKeyResponse::fromXContent, listener, emptySet());
     }
 
@@ -1123,7 +1117,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public CreateApiKeyResponse grantApiKey(final GrantApiKeyRequest request, final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::grantApiKey, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::grantApiKey, options,
             CreateApiKeyResponse::fromXContent, emptySet());
     }
 
@@ -1139,7 +1133,7 @@ public final class SecurityClient {
      */
     public Cancellable grantApiKeyAsync(final GrantApiKeyRequest request, final RequestOptions options,
                                          final ActionListener<CreateApiKeyResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::grantApiKey, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::grantApiKey, options,
             CreateApiKeyResponse::fromXContent, listener, emptySet());
     }
 
@@ -1154,7 +1148,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public QueryApiKeyResponse queryApiKey(final QueryApiKeyRequest request, final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::queryApiKey, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::queryApiKey, options,
             QueryApiKeyResponse::fromXContent, emptySet());
     }
 
@@ -1170,7 +1164,7 @@ public final class SecurityClient {
      */
     public Cancellable queryApiKeyAsync(final QueryApiKeyRequest request, final RequestOptions options,
                                       final ActionListener<QueryApiKeyResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::queryApiKey, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::queryApiKey, options,
             QueryApiKeyResponse::fromXContent, listener, emptySet());
     }
 
@@ -1184,7 +1178,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetServiceAccountsResponse getServiceAccounts(GetServiceAccountsRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::getServiceAccounts, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::getServiceAccounts, options,
             GetServiceAccountsResponse::fromXContent, emptySet());
     }
 
@@ -1199,7 +1193,7 @@ public final class SecurityClient {
      */
     public Cancellable getServiceAccountsAsync(GetServiceAccountsRequest request, RequestOptions options,
                                                ActionListener<GetServiceAccountsResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getServiceAccounts, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getServiceAccounts, options,
             GetServiceAccountsResponse::fromXContent, listener, emptySet());
     }
 
@@ -1215,7 +1209,7 @@ public final class SecurityClient {
      */
     public CreateServiceAccountTokenResponse createServiceAccountToken(final CreateServiceAccountTokenRequest request,
                                                                        final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::createServiceAccountToken, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::createServiceAccountToken, options,
             CreateServiceAccountTokenResponse::fromXContent, emptySet());
     }
 
@@ -1232,7 +1226,7 @@ public final class SecurityClient {
     public Cancellable createServiceAccountTokenAsync(final CreateServiceAccountTokenRequest request,
                                                       final RequestOptions options,
                                                       final ActionListener<CreateServiceAccountTokenResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::createServiceAccountToken, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::createServiceAccountToken, options,
             CreateServiceAccountTokenResponse::fromXContent, listener, emptySet());
     }
 
@@ -1248,7 +1242,7 @@ public final class SecurityClient {
      */
     public DeleteServiceAccountTokenResponse deleteServiceAccountToken(final DeleteServiceAccountTokenRequest request,
                                                                        final RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::deleteServiceAccountToken, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::deleteServiceAccountToken, options,
             DeleteServiceAccountTokenResponse::fromXContent, emptySet());
     }
 
@@ -1265,7 +1259,7 @@ public final class SecurityClient {
     public Cancellable deleteServiceAccountTokenAsync(final DeleteServiceAccountTokenRequest request,
                                                       final RequestOptions options,
                                                       final ActionListener<DeleteServiceAccountTokenResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::deleteServiceAccountToken, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::deleteServiceAccountToken, options,
             DeleteServiceAccountTokenResponse::fromXContent, listener, emptySet());
     }
 
@@ -1280,7 +1274,7 @@ public final class SecurityClient {
      */
     public GetServiceAccountCredentialsResponse getServiceAccountCredentials(GetServiceAccountCredentialsRequest request,
                                                                              RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::getServiceAccountCredentials,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::getServiceAccountCredentials,
             options, GetServiceAccountCredentialsResponse::fromXContent, emptySet());
     }
 
@@ -1295,7 +1289,7 @@ public final class SecurityClient {
      */
     public Cancellable getServiceAccountCredentialsAsync(GetServiceAccountCredentialsRequest request, RequestOptions options,
                                                          ActionListener<GetServiceAccountCredentialsResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getServiceAccountCredentials,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::getServiceAccountCredentials,
             options, GetServiceAccountCredentialsResponse::fromXContent, listener, emptySet());
     }
 
@@ -1312,7 +1306,7 @@ public final class SecurityClient {
      */
     public DelegatePkiAuthenticationResponse delegatePkiAuthentication(DelegatePkiAuthenticationRequest request, RequestOptions options)
             throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, SecurityRequestConverters::delegatePkiAuthentication, options,
+        return performRequestAndParseEntity(request, SecurityRequestConverters::delegatePkiAuthentication, options,
                 DelegatePkiAuthenticationResponse::fromXContent, emptySet());
     }
 
@@ -1330,7 +1324,7 @@ public final class SecurityClient {
      */
     public Cancellable delegatePkiAuthenticationAsync(DelegatePkiAuthenticationRequest request, RequestOptions options,
             ActionListener<DelegatePkiAuthenticationResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, SecurityRequestConverters::delegatePkiAuthentication, options,
+        return performRequestAsyncAndParseEntity(request, SecurityRequestConverters::delegatePkiAuthentication, options,
                 DelegatePkiAuthenticationResponse::fromXContent, listener, emptySet());
     }
 
@@ -1341,7 +1335,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public NodeEnrollmentResponse enrollNode(RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
             NodeEnrollmentRequest.INSTANCE, NodeEnrollmentRequest::getRequest,
             options, NodeEnrollmentResponse::fromXContent, emptySet());
     }
@@ -1352,7 +1346,7 @@ public final class SecurityClient {
      * @param listener the listener to be notified upon request completion. The listener will be called with the value {@code true}
      */
     public Cancellable enrollNodeAsync(RequestOptions options, ActionListener<NodeEnrollmentResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(NodeEnrollmentRequest.INSTANCE, NodeEnrollmentRequest::getRequest,
+        return performRequestAsyncAndParseEntity(NodeEnrollmentRequest.INSTANCE, NodeEnrollmentRequest::getRequest,
             options, NodeEnrollmentResponse::fromXContent, listener, emptySet());
     }
 
@@ -1363,7 +1357,7 @@ public final class SecurityClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public KibanaEnrollmentResponse enrollKibana(RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
             KibanaEnrollmentRequest.INSTANCE,
             KibanaEnrollmentRequest::getRequest,
             options,
@@ -1379,7 +1373,7 @@ public final class SecurityClient {
     public Cancellable enrollKibanaAsync(
         RequestOptions options,
         ActionListener<KibanaEnrollmentResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             KibanaEnrollmentRequest.INSTANCE,
             KibanaEnrollmentRequest::getRequest, options, KibanaEnrollmentResponse::fromXContent, listener, emptySet());
     }

@@ -24,13 +24,8 @@ import java.util.Collections;
  * See the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/eql.html">
  * EQL APIs on elastic.co</a> for more information.
  */
-public final class EqlClient {
+public final class EqlClient extends RestHighLevelClient{
 
-    private final RestHighLevelClient restHighLevelClient;
-
-    EqlClient(RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = restHighLevelClient;
-    }
 
     /**
      * Executes the eql search query.
@@ -44,7 +39,7 @@ public final class EqlClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public EqlSearchResponse search(EqlSearchRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
             request,
             EqlRequestConverters::search,
             options,
@@ -67,7 +62,7 @@ public final class EqlClient {
     public Cancellable searchAsync(EqlSearchRequest request,
                               RequestOptions options,
                               ActionListener<EqlSearchResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             request,
             EqlRequestConverters::search,
             options,
@@ -87,7 +82,7 @@ public final class EqlClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public EqlStatsResponse stats(EqlStatsRequest request, RequestOptions options)  throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
             request,
             EqlRequestConverters::stats,
             options,
@@ -106,7 +101,7 @@ public final class EqlClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable statsAsync(EqlStatsRequest request, RequestOptions options, ActionListener<EqlStatsResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request,
+        return performRequestAsyncAndParseEntity(request,
             EqlRequestConverters::stats,
             options,
             EqlStatsResponse::fromXContent,

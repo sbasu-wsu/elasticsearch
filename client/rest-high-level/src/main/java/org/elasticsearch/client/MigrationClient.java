@@ -22,13 +22,7 @@ import java.util.Collections;
  * See the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/migration-api.html">
  * X-Pack Migration APIs on elastic.co</a> for more information.
  */
-public final class MigrationClient {
-
-    private final RestHighLevelClient restHighLevelClient;
-
-    MigrationClient(RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = restHighLevelClient;
-    }
+public final class MigrationClient extends RestHighLevelClient{
 
     /**
      * Get deprecation info for one or more indices
@@ -38,7 +32,7 @@ public final class MigrationClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public DeprecationInfoResponse getDeprecationInfo(DeprecationInfoRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, MigrationRequestConverters::getDeprecationInfo, options,
+        return performRequestAndParseEntity(request, MigrationRequestConverters::getDeprecationInfo, options,
             DeprecationInfoResponse::fromXContent, Collections.emptySet());
     }
 
@@ -51,7 +45,7 @@ public final class MigrationClient {
      */
     public Cancellable getDeprecationInfoAsync(DeprecationInfoRequest request, RequestOptions options,
                                                ActionListener<DeprecationInfoResponse> listener)  {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, MigrationRequestConverters::getDeprecationInfo, options,
+        return performRequestAsyncAndParseEntity(request, MigrationRequestConverters::getDeprecationInfo, options,
             DeprecationInfoResponse::fromXContent, listener, Collections.emptySet());
     }
 }
