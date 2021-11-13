@@ -128,7 +128,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
         // end::put-settings-request-masterTimeout
 
         // tag::put-settings-execute
-        ClusterUpdateSettingsResponse response = client.cluster().putSettings(request, RequestOptions.DEFAULT);
+        ClusterUpdateSettingsResponse response = clusterClient().putSettings(request, RequestOptions.DEFAULT);
         // end::put-settings-execute
 
         // tag::put-settings-response
@@ -144,7 +144,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
         request.transientSettings(Settings.builder().putNull(transientSettingKey).build()); // <1>
         // tag::put-settings-request-reset-transient
         request.persistentSettings(Settings.builder().putNull(persistentSettingKey));
-        ClusterUpdateSettingsResponse resetResponse = client.cluster().putSettings(request, RequestOptions.DEFAULT);
+        ClusterUpdateSettingsResponse resetResponse = clusterClient().putSettings(request, RequestOptions.DEFAULT);
 
         assertTrue(resetResponse.isAcknowledged());
     }
@@ -174,7 +174,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::put-settings-execute-async
-            client.cluster().putSettingsAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            clusterClient().putSettingsAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::put-settings-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -203,7 +203,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
         // end::get-settings-request-masterTimeout
 
         // tag::get-settings-execute
-        ClusterGetSettingsResponse response = client.cluster().getSettings(request, RequestOptions.DEFAULT); // <1>
+        ClusterGetSettingsResponse response = clusterClient().getSettings(request, RequestOptions.DEFAULT); // <1>
         // end::get-settings-execute
 
         // tag::get-settings-response
@@ -241,7 +241,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
         listener = new LatchedActionListener<>(listener, latch);
 
         // tag::get-settings-execute-async
-        client.cluster().getSettingsAsync(request, RequestOptions.DEFAULT, listener); // <1>
+        clusterClient().getSettingsAsync(request, RequestOptions.DEFAULT, listener); // <1>
         // end::get-settings-execute-async
 
         assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -316,7 +316,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
         // end::health-request-local
 
         // tag::health-execute
-        ClusterHealthResponse response = client.cluster().health(request, RequestOptions.DEFAULT);
+        ClusterHealthResponse response = clusterClient().health(request, RequestOptions.DEFAULT);
         // end::health-execute
 
         assertThat(response.isTimedOut(), equalTo(false));
@@ -412,7 +412,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::health-execute-async
-            client.cluster().healthAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            clusterClient().healthAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::health-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -429,7 +429,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
         // end::remote-info-request
 
         // tag::remote-info-execute
-        RemoteInfoResponse response = client.cluster().remoteInfo(request, RequestOptions.DEFAULT); // <1>
+        RemoteInfoResponse response = clusterClient().remoteInfo(request, RequestOptions.DEFAULT); // <1>
         // end::remote-info-execute
 
         // tag::remote-info-response
@@ -469,7 +469,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
         listener = new LatchedActionListener<>(listener, latch);
 
         // tag::health-execute-async
-            client.cluster().remoteInfoAsync(request, RequestOptions.DEFAULT, listener); // <1>
+        clusterClient().remoteInfoAsync(request, RequestOptions.DEFAULT, listener); // <1>
         // end::health-execute-async
 
         assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -482,9 +482,9 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
             ComponentTemplate componentTemplate = new ComponentTemplate(template, null, null);
             PutComponentTemplateRequest putComponentTemplateRequest =
                 new PutComponentTemplateRequest().name("ct1").componentTemplate(componentTemplate);
-            client.cluster().putComponentTemplate(putComponentTemplateRequest, RequestOptions.DEFAULT);
+            clusterClient().putComponentTemplate(putComponentTemplateRequest, RequestOptions.DEFAULT);
 
-            assertTrue(client.cluster().putComponentTemplate(putComponentTemplateRequest, RequestOptions.DEFAULT).isAcknowledged());
+            assertTrue(clusterClient().putComponentTemplate(putComponentTemplateRequest, RequestOptions.DEFAULT).isAcknowledged());
         }
 
         // tag::get-component-templates-request
@@ -497,7 +497,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
         // end::get-component-templates-request-masterTimeout
 
         // tag::get-component-templates-execute
-        GetComponentTemplatesResponse getTemplatesResponse = client.cluster().getComponentTemplate(request, RequestOptions.DEFAULT);
+        GetComponentTemplatesResponse getTemplatesResponse = clusterClient().getComponentTemplate(request, RequestOptions.DEFAULT);
         // end::get-component-templates-execute
 
         // tag::get-component-templates-response
@@ -527,7 +527,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
         listener = new LatchedActionListener<>(listener, latch);
 
         // tag::get-component-templates-execute-async
-        client.cluster().getComponentTemplateAsync(request, RequestOptions.DEFAULT, listener); // <1>
+        clusterClient().getComponentTemplateAsync(request, RequestOptions.DEFAULT, listener); // <1>
         // end::get-component-templates-execute-async
 
         assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -556,7 +556,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
             Template template = new Template(settings, new CompressedXContent(mappingJson), Map.of("twitter_alias", twitterAlias)); // <2>
 
             request.componentTemplate(new ComponentTemplate(template, null, null));
-            assertTrue(client.cluster().putComponentTemplate(request, RequestOptions.DEFAULT).isAcknowledged());
+            assertTrue(clusterClient().putComponentTemplate(request, RequestOptions.DEFAULT).isAcknowledged());
             // end::put-component-template-request
         }
 
@@ -570,7 +570,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
             Template template = new Template(settings, null, null);
 
             request.componentTemplate(new ComponentTemplate(template, 3L, null)); // <1>
-            assertTrue(client.cluster().putComponentTemplate(request, RequestOptions.DEFAULT).isAcknowledged());
+            assertTrue(clusterClient().putComponentTemplate(request, RequestOptions.DEFAULT).isAcknowledged());
             // end::put-component-template-request-version
 
             // tag::put-component-template-request-create
@@ -584,7 +584,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
             request.create(false); // make test happy
 
             // tag::put-component-template-request-execute
-            AcknowledgedResponse putComponentTemplateResponse = client.cluster().putComponentTemplate(request, RequestOptions.DEFAULT);
+            AcknowledgedResponse putComponentTemplateResponse = clusterClient().putComponentTemplate(request, RequestOptions.DEFAULT);
             // end::put-component-template-request-execute
 
             // tag::put-component-template-response
@@ -611,7 +611,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::put-component-template-execute-async
-            client.cluster().putComponentTemplateAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            clusterClient().putComponentTemplateAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::put-component-template-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -639,7 +639,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
             Template template = new Template(settings, new CompressedXContent(mappingJson), Map.of("twitter_alias", twitterAlias));
 
             request.componentTemplate(new ComponentTemplate(template, null, null));
-            assertTrue(client.cluster().putComponentTemplate(request, RequestOptions.DEFAULT).isAcknowledged());
+            assertTrue(clusterClient().putComponentTemplate(request, RequestOptions.DEFAULT).isAcknowledged());
         }
 
         // tag::delete-component-template-request
@@ -651,7 +651,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
         // end::delete-component-template-request-masterTimeout
 
         // tag::delete-component-template-execute
-        AcknowledgedResponse deleteTemplateAcknowledge = client.cluster().deleteComponentTemplate(deleteRequest, RequestOptions.DEFAULT);
+        AcknowledgedResponse deleteTemplateAcknowledge = clusterClient().deleteComponentTemplate(deleteRequest, RequestOptions.DEFAULT);
         // end::delete-component-template-execute
 
         // tag::delete-component-template-response
@@ -669,7 +669,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
                 .build();
             Template template = new Template(settings, null, null);
             request.componentTemplate(new ComponentTemplate(template, null, null));
-            assertTrue(client.cluster().putComponentTemplate(request, RequestOptions.DEFAULT).isAcknowledged());
+            assertTrue(clusterClient().putComponentTemplate(request, RequestOptions.DEFAULT).isAcknowledged());
         }
 
         // tag::delete-component-template-execute-listener
@@ -691,7 +691,7 @@ public class ClusterClientDocumentationIT extends ESRestHighLevelClientTestCase 
         listener = new LatchedActionListener<>(listener, latch);
 
         // tag::delete-component-template-execute-async
-        client.cluster().deleteComponentTemplateAsync(deleteRequest, RequestOptions.DEFAULT, listener); // <1>
+        clusterClient().deleteComponentTemplateAsync(deleteRequest, RequestOptions.DEFAULT, listener); // <1>
         // end::delete-component-template-execute-async
 
         assertTrue(latch.await(30L, TimeUnit.SECONDS));

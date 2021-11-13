@@ -141,29 +141,26 @@ public class RestHighLevelClient implements Closeable {
     private CheckedConsumer<RestClient, IOException> doClose;
 
     /** Do not access directly but through getVersionValidationFuture() */
-//    private volatile ListenableFuture<Optional<String>> versionValidationFuture;
-//    private final IndicesClient indicesClient = new IndicesClient();
-//    private final ClusterClient clusterClient = new ClusterClient();
-//    private final IngestClient ingestClient = new IngestClient();
-//    private final SnapshotClient snapshotClient = new SnapshotClient();
-//    private final TasksClient tasksClient = new TasksClient();
-//    private final XPackClient xPackClient = new XPackClient();
-//    private final WatcherClient watcherClient = new WatcherClient();
-//    private final GraphClient graphClient = new GraphClient();
-//    private final LicenseClient licenseClient = new LicenseClient();
-//    private final MigrationClient migrationClient = new MigrationClient();
-//    private final MachineLearningClient machineLearningClient = new MachineLearningClient();
-//    private final SecurityClient securityClient = new SecurityClient();
-//    private final IndexLifecycleClient ilmClient = new IndexLifecycleClient();
-//    private final RollupClient rollupClient = new RollupClient();
-//    private final CcrClient ccrClient = new CcrClient();
-//    private final TransformClient transformClient = new TransformClient();
-//    private final EnrichClient enrichClient = new EnrichClient();
-//    private final EqlClient eqlClient = new EqlClient();
-//    private final AsyncSearchClient asyncSearchClient = new AsyncSearchClient();
-//    private final TextStructureClient textStructureClient = new TextStructureClient();
-//    private final SearchableSnapshotsClient searchableSnapshotsClient = new SearchableSnapshotsClient();
-//    private final FeaturesClient featuresClient = new FeaturesClient();
+    private volatile ListenableFuture<Optional<String>> versionValidationFuture;
+    // Moved four of these classes to extend HighLevelRestClient instead of this class initializing an instance of them
+    private final TasksClient tasksClient = new TasksClient();
+    private final XPackClient xPackClient = new XPackClient();
+    private final WatcherClient watcherClient = new WatcherClient();
+    private final GraphClient graphClient = new GraphClient();
+    private final LicenseClient licenseClient = new LicenseClient();
+    private final MigrationClient migrationClient = new MigrationClient();
+    private final MachineLearningClient machineLearningClient = new MachineLearningClient();
+    private final SecurityClient securityClient = new SecurityClient();
+    private final IndexLifecycleClient ilmClient = new IndexLifecycleClient();
+    private final RollupClient rollupClient = new RollupClient();
+    private final CcrClient ccrClient = new CcrClient();
+    private final TransformClient transformClient = new TransformClient();
+    private final EnrichClient enrichClient = new EnrichClient();
+    private final EqlClient eqlClient = new EqlClient();
+    private final AsyncSearchClient asyncSearchClient = new AsyncSearchClient();
+    private final TextStructureClient textStructureClient = new TextStructureClient();
+    private final SearchableSnapshotsClient searchableSnapshotsClient = new SearchableSnapshotsClient();
+    private final FeaturesClient featuresClient = new FeaturesClient();
 
 
     /**
@@ -213,42 +210,6 @@ public class RestHighLevelClient implements Closeable {
     @Override
     public final void close() throws IOException {
         doClose.accept(client);
-    }
-
-    /**
-     * Provides an {@link IndicesClient} which can be used to access the Indices API.
-     *
-     * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/indices.html">Indices API on elastic.co</a>
-     */
-    public final IndicesClient indices() {
-        return indicesClient;
-    }
-
-    /**
-     * Provides a {@link ClusterClient} which can be used to access the Cluster API.
-     *
-     * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster.html">Cluster API on elastic.co</a>
-     */
-    public final ClusterClient cluster() {
-        return clusterClient;
-    }
-
-    /**
-     * Provides a {@link IngestClient} which can be used to access the Ingest API.
-     *
-     * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html">Ingest API on elastic.co</a>
-     */
-    public final IngestClient ingest() {
-        return ingestClient;
-    }
-
-    /**
-     * Provides a {@link SnapshotClient} which can be used to access the Snapshot API.
-     *
-     * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html">Snapshot API on elastic.co</a>
-     */
-    public final SnapshotClient snapshot() {
-        return snapshotClient;
     }
 
     /**

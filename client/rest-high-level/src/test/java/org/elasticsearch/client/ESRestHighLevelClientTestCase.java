@@ -58,6 +58,7 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.notNullValue;
@@ -68,6 +69,11 @@ public abstract class ESRestHighLevelClientTestCase extends ESRestTestCase {
 
     private static RestHighLevelClient restHighLevelClient;
     private static RestHighLevelClient adminRestHighLevelClient;
+    private static IndicesClient indicesClient;
+    private static ClusterClient clusterClient;
+    private static IngestClient ingestClient;
+    private static SnapshotClient snapshotClient;
+
     private static boolean async = Booleans.parseBoolean(System.getProperty("tests.rest.async", "false"));
 
     @Before
@@ -76,22 +82,60 @@ public abstract class ESRestHighLevelClientTestCase extends ESRestTestCase {
         if (restHighLevelClient == null) {
             restHighLevelClient = new HighLevelClient(client());
         }
+        if (indicesClient == null) {
+            indicesClient = new IndicesClient();
+        }
         if (adminRestHighLevelClient == null) {
             adminRestHighLevelClient = new HighLevelClient(adminClient());
         }
+        if (clusterClient == null) {
+            clusterClient = new ClusterClient();
+        }
+        if (ingestClient == null) {
+            ingestClient = new IngestClient();
+        }
+        if (snapshotClient == null) {
+            snapshotClient = new SnapshotClient();
+        }
+
     }
 
     @AfterClass
     public static void cleanupClient() throws IOException {
         IOUtils.close(restHighLevelClient);
         IOUtils.close(adminRestHighLevelClient);
+        IOUtils.close(clusterClient);
+        IOUtils.close(ingestClient);
+        IOUtils.close(snapshotClient);
+        IOUtils.close(indicesClient);
         restHighLevelClient = null;
         adminRestHighLevelClient = null;
+        clusterClient = null;
+        ingestClient = null;
+        snapshotClient = null;
+        indicesClient = null;
     }
 
     protected static RestHighLevelClient highLevelClient() {
         return restHighLevelClient;
     }
+
+    protected static IndicesClient indicesClient() {
+        return indicesClient;
+    }
+
+    protected static ClusterClient clusterClient() {
+        return clusterClient;
+    }
+
+    protected static IngestClient ingestClient() {
+        return ingestClient;
+    }
+
+    protected static SnapshotClient snapshotClient() {
+        return snapshotClient;
+    }
+
 
     @Override
     protected Settings restAdminSettings() {
@@ -225,7 +269,7 @@ public abstract class ESRestHighLevelClientTestCase extends ESRestTestCase {
 
     protected static void createPipeline(PutPipelineRequest putPipelineRequest) throws IOException {
         assertTrue(execute(
-            putPipelineRequest, highLevelClient().ingest()::putPipeline, highLevelClient().ingest()::putPipelineAsync).isAcknowledged());
+            putPipelineRequest, ingestClient::putPipeline, ingestClient::putPipelineAsync).isAcknowledged());
     }
 
     protected static void clusterUpdateSettings(Settings persistentSettings,
@@ -234,7 +278,7 @@ public abstract class ESRestHighLevelClientTestCase extends ESRestTestCase {
         request.persistentSettings(persistentSettings);
         request.transientSettings(transientSettings);
         assertTrue(execute(
-            request, highLevelClient().cluster()::putSettings, highLevelClient().cluster()::putSettingsAsync).isAcknowledged());
+            request, clusterClient::putSettings, clusterClient::putSettingsAsync).isAcknowledged());
     }
 
     protected void putConflictPipeline() throws IOException {
@@ -257,7 +301,7 @@ public abstract class ESRestHighLevelClientTestCase extends ESRestTestCase {
             .endObject();
         final PutPipelineRequest putPipelineRequest = new PutPipelineRequest(CONFLICT_PIPELINE_ID, BytesReference.bytes(pipelineBuilder),
             pipelineBuilder.contentType());
-        assertTrue(highLevelClient().ingest().putPipeline(putPipelineRequest, RequestOptions.DEFAULT).isAcknowledged());
+        assertTrue(ingestClient.putPipeline(putPipelineRequest, RequestOptions.DEFAULT).isAcknowledged());
     }
 
     @Override
@@ -296,7 +340,7 @@ public abstract class ESRestHighLevelClientTestCase extends ESRestTestCase {
             .put("index.number_of_shards", shards)
             .put("index.number_of_replicas", 0)
         );
-        highLevelClient().indices().create(indexRequest, RequestOptions.DEFAULT);
+        indicesClient.create(indexRequest, RequestOptions.DEFAULT);
     }
 
     protected static void setupRemoteClusterConfig(String remoteClusterName) throws Exception {
@@ -311,11 +355,11 @@ public abstract class ESRestHighLevelClientTestCase extends ESRestTestCase {
         ClusterUpdateSettingsRequest updateSettingsRequest = new ClusterUpdateSettingsRequest();
         updateSettingsRequest.transientSettings(singletonMap("cluster.remote." + remoteClusterName + ".seeds", transportAddress));
         ClusterUpdateSettingsResponse updateSettingsResponse =
-                restHighLevelClient.cluster().putSettings(updateSettingsRequest, RequestOptions.DEFAULT);
+                clusterClient.putSettings(updateSettingsRequest, RequestOptions.DEFAULT);
         assertThat(updateSettingsResponse.isAcknowledged(), is(true));
 
         assertBusy(() -> {
-            RemoteInfoResponse response = highLevelClient().cluster().remoteInfo(new RemoteInfoRequest(), RequestOptions.DEFAULT);
+            RemoteInfoResponse response = clusterClient.remoteInfo(new RemoteInfoRequest(), RequestOptions.DEFAULT);
             assertThat(response, notNullValue());
             assertThat(response.getInfos().size(), greaterThan(0));
         });

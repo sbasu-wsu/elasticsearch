@@ -157,7 +157,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
         // end::create-repository-request-verify
 
         // tag::create-repository-execute
-        AcknowledgedResponse response = client.snapshot().createRepository(request, RequestOptions.DEFAULT);
+        AcknowledgedResponse response = snapshotClient().createRepository(request, RequestOptions.DEFAULT);
         // end::create-repository-execute
 
         // tag::create-repository-response
@@ -191,7 +191,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::create-repository-execute-async
-            client.snapshot().createRepositoryAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            snapshotClient().createRepositoryAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::create-repository-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -220,7 +220,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
         // end::get-repository-request-masterTimeout
 
         // tag::get-repository-execute
-        GetRepositoriesResponse response = client.snapshot().getRepository(request, RequestOptions.DEFAULT);
+        GetRepositoriesResponse response = snapshotClient().getRepository(request, RequestOptions.DEFAULT);
         // end::get-repository-execute
 
         // tag::get-repository-response
@@ -255,7 +255,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::get-repository-execute-async
-            client.snapshot().getRepositoryAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            snapshotClient().getRepositoryAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::get-repository-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -319,7 +319,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
         // end::restore-snapshot-request-index-settings
 
         // tag::restore-snapshot-execute
-        RestoreSnapshotResponse response = client.snapshot().restore(request, RequestOptions.DEFAULT);
+        RestoreSnapshotResponse response = snapshotClient().restore(request, RequestOptions.DEFAULT);
         // end::restore-snapshot-execute
 
         // tag::restore-snapshot-response
@@ -356,7 +356,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::restore-snapshot-execute-async
-            client.snapshot().restoreAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            snapshotClient().restoreAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::restore-snapshot-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -382,7 +382,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
         // end::delete-repository-request-timeout
 
         // tag::delete-repository-execute
-        AcknowledgedResponse response = client.snapshot().deleteRepository(request, RequestOptions.DEFAULT);
+        AcknowledgedResponse response = snapshotClient().deleteRepository(request, RequestOptions.DEFAULT);
         // end::delete-repository-execute
 
         // tag::delete-repository-response
@@ -416,7 +416,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::delete-repository-execute-async
-            client.snapshot().deleteRepositoryAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            snapshotClient().deleteRepositoryAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::delete-repository-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -441,7 +441,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
         // end::verify-repository-request-timeout
 
         // tag::verify-repository-execute
-        VerifyRepositoryResponse response = client.snapshot().verifyRepository(request, RequestOptions.DEFAULT);
+        VerifyRepositoryResponse response = snapshotClient().verifyRepository(request, RequestOptions.DEFAULT);
         // end::verify-repository-execute
 
         // tag::verify-repository-response
@@ -481,7 +481,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::verify-repository-execute-async
-            client.snapshot().verifyRepositoryAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            snapshotClient().verifyRepositoryAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::verify-repository-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -530,7 +530,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
         // end::create-snapshot-request-waitForCompletion
 
         // tag::create-snapshot-execute
-        CreateSnapshotResponse response = client.snapshot().create(request, RequestOptions.DEFAULT);
+        CreateSnapshotResponse response = snapshotClient().create(request, RequestOptions.DEFAULT);
         // end::create-snapshot-execute
 
         // tag::create-snapshot-response
@@ -571,7 +571,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::create-snapshot-execute-async
-            client.snapshot().createAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            snapshotClient().createAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::create-snapshot-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -613,7 +613,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
         // end::get-snapshots-request-ignore-unavailable
 
         // tag::get-snapshots-execute
-        GetSnapshotsResponse response = client.snapshot().get(request, RequestOptions.DEFAULT);
+        GetSnapshotsResponse response = snapshotClient().get(request, RequestOptions.DEFAULT);
         // end::get-snapshots-execute
 
         // tag::get-snapshots-response
@@ -654,7 +654,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::get-snapshots-execute-async
-            client.snapshot().getAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            snapshotClient().getAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::get-snapshots-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -687,7 +687,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
         // end::snapshots-status-request-masterTimeout
 
         // tag::snapshots-status-execute
-        SnapshotsStatusResponse response = client.snapshot().status(request, RequestOptions.DEFAULT);
+        SnapshotsStatusResponse response = snapshotClient().status(request, RequestOptions.DEFAULT);
         // end::snapshots-status-execute
 
         // tag::snapshots-status-response
@@ -727,7 +727,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::snapshots-status-execute-async
-            client.snapshot().statusAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            snapshotClient().statusAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::snapshots-status-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -752,7 +752,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
         // end::delete-snapshot-request-masterTimeout
 
         // tag::delete-snapshot-execute
-        AcknowledgedResponse response = client.snapshot().delete(request, RequestOptions.DEFAULT);
+        AcknowledgedResponse response = snapshotClient().delete(request, RequestOptions.DEFAULT);
         // end::delete-snapshot-execute
 
         // tag::delete-snapshot-response
@@ -786,7 +786,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::delete-snapshot-execute-async
-            client.snapshot().deleteAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            snapshotClient().deleteAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::delete-snapshot-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -828,7 +828,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
         // end::clone-snapshot-request-index-settings
 
         // tag::clone-snapshot-execute
-        AcknowledgedResponse response = client.snapshot().clone(request, RequestOptions.DEFAULT);
+        AcknowledgedResponse response = snapshotClient().clone(request, RequestOptions.DEFAULT);
         // end::clone-snapshot-execute
 
         // tag::clone-snapshot-response
@@ -863,7 +863,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::clone-snapshot-execute-async
-            client.snapshot().cloneAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            snapshotClient().cloneAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::clone-snapshot-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -874,7 +874,7 @@ public class SnapshotClientDocumentationIT extends ESRestHighLevelClientTestCase
         PutRepositoryRequest request = new PutRepositoryRequest(repositoryName);
         request.type(FsRepository.TYPE);
         request.settings("{\"location\": \".\"}", XContentType.JSON);
-        assertTrue(highLevelClient().snapshot().createRepository(request, RequestOptions.DEFAULT).isAcknowledged());
+        assertTrue(snapshotClient().createRepository(request, RequestOptions.DEFAULT).isAcknowledged());
     }
 
     private void createTestIndex() throws IOException {
