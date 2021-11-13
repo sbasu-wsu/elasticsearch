@@ -71,7 +71,7 @@ public class CCRIT extends ESRestHighLevelClientTestCase {
         CcrClient ccrClient = highLevelClient().ccr();
 
         CreateIndexRequest createIndexRequest = new CreateIndexRequest("leader");
-        CreateIndexResponse response = highLevelClient().indices().create(createIndexRequest, RequestOptions.DEFAULT);
+        CreateIndexResponse response = indicesClient().create(createIndexRequest, RequestOptions.DEFAULT);
         assertThat(response.isAcknowledged(), is(true));
 
         PutFollowRequest putFollowRequest = new PutFollowRequest("local_cluster", "leader", "follower", ActiveShardCount.ONE);
@@ -117,7 +117,7 @@ public class CCRIT extends ESRestHighLevelClientTestCase {
 
                 GetSettingsRequest followerSettingsRequest = new GetSettingsRequest().indices("follower");
                 GetSettingsResponse followerSettingsResponse =
-                    highLevelClient().indices().getSettings(followerSettingsRequest, RequestOptions.DEFAULT);
+                    indicesClient().getSettings(followerSettingsRequest, RequestOptions.DEFAULT);
                 assertThat(
                     IndexMetadata.INDEX_NUMBER_OF_REPLICAS_SETTING.get(followerSettingsResponse.getIndexToSettings().get("follower")),
                     equalTo(0));
@@ -179,7 +179,7 @@ public class CCRIT extends ESRestHighLevelClientTestCase {
         // Need to close index prior to unfollowing it:
         CloseIndexRequest closeIndexRequest = new CloseIndexRequest("follower");
         org.elasticsearch.action.support.master.AcknowledgedResponse closeIndexReponse =
-            highLevelClient().indices().close(closeIndexRequest, RequestOptions.DEFAULT);
+            indicesClient().close(closeIndexRequest, RequestOptions.DEFAULT);
         assertThat(closeIndexReponse.isAcknowledged(), is(true));
 
         UnfollowRequest unfollowRequest = new UnfollowRequest("follower");
@@ -196,7 +196,7 @@ public class CCRIT extends ESRestHighLevelClientTestCase {
         settings.put("index.number_of_replicas", "0");
         settings.put("index.number_of_shards", Integer.toString(numberOfShards));
         createIndexRequest.settings(settings);
-        final CreateIndexResponse response = highLevelClient().indices().create(createIndexRequest, RequestOptions.DEFAULT);
+        final CreateIndexResponse response = indicesClient().create(createIndexRequest, RequestOptions.DEFAULT);
         assertThat(response.isAcknowledged(), is(true));
 
         final PutFollowRequest putFollowRequest = new PutFollowRequest("local_cluster", "leader", "follower", ActiveShardCount.ONE);
@@ -260,11 +260,11 @@ public class CCRIT extends ESRestHighLevelClientTestCase {
 
         CreateIndexRequest createExcludedIndexRequest = new CreateIndexRequest("logs-excluded");
         CreateIndexResponse createExcludedIndexResponse =
-            highLevelClient().indices().create(createExcludedIndexRequest, RequestOptions.DEFAULT);
+            indicesClient().create(createExcludedIndexRequest, RequestOptions.DEFAULT);
         assertThat(createExcludedIndexResponse.isAcknowledged(), is(true));
 
         CreateIndexRequest createIndexRequest = new CreateIndexRequest("logs-20200101");
-        CreateIndexResponse response = highLevelClient().indices().create(createIndexRequest, RequestOptions.DEFAULT);
+        CreateIndexResponse response = indicesClient().create(createIndexRequest, RequestOptions.DEFAULT);
         assertThat(response.isAcknowledged(), is(true));
 
         assertBusy(() -> {

@@ -82,7 +82,7 @@ public class IngestClientDocumentationIT extends ESRestHighLevelClientTestCase {
             // end::put-pipeline-request-masterTimeout
 
             // tag::put-pipeline-execute
-            AcknowledgedResponse response = client.ingest().putPipeline(request, RequestOptions.DEFAULT); // <1>
+            AcknowledgedResponse response = ingestClient().putPipeline(request, RequestOptions.DEFAULT); // <1>
             // end::put-pipeline-execute
 
             // tag::put-pipeline-response
@@ -125,7 +125,7 @@ public class IngestClientDocumentationIT extends ESRestHighLevelClientTestCase {
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::put-pipeline-execute-async
-            client.ingest().putPipelineAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            ingestClient().putPipelineAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::put-pipeline-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -151,7 +151,7 @@ public class IngestClientDocumentationIT extends ESRestHighLevelClientTestCase {
             // end::get-pipeline-request-masterTimeout
 
             // tag::get-pipeline-execute
-            GetPipelineResponse response = client.ingest().getPipeline(request, RequestOptions.DEFAULT); // <1>
+            GetPipelineResponse response = ingestClient().getPipeline(request, RequestOptions.DEFAULT); // <1>
             // end::get-pipeline-execute
 
             // tag::get-pipeline-response
@@ -196,7 +196,7 @@ public class IngestClientDocumentationIT extends ESRestHighLevelClientTestCase {
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::get-pipeline-execute-async
-            client.ingest().getPipelineAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            ingestClient().getPipelineAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::get-pipeline-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -226,7 +226,7 @@ public class IngestClientDocumentationIT extends ESRestHighLevelClientTestCase {
             // end::delete-pipeline-request-masterTimeout
 
             // tag::delete-pipeline-execute
-            AcknowledgedResponse response = client.ingest().deletePipeline(request, RequestOptions.DEFAULT); // <1>
+            AcknowledgedResponse response = ingestClient().deletePipeline(request, RequestOptions.DEFAULT); // <1>
             // end::delete-pipeline-execute
 
             // tag::delete-pipeline-response
@@ -266,7 +266,7 @@ public class IngestClientDocumentationIT extends ESRestHighLevelClientTestCase {
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::delete-pipeline-execute-async
-            client.ingest().deletePipelineAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            ingestClient().deletePipelineAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::delete-pipeline-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));
@@ -307,7 +307,7 @@ public class IngestClientDocumentationIT extends ESRestHighLevelClientTestCase {
             // end::simulate-pipeline-request-verbose
 
             // tag::simulate-pipeline-execute
-            SimulatePipelineResponse response = client.ingest().simulate(request, RequestOptions.DEFAULT); // <1>
+            SimulatePipelineResponse response = ingestClient().simulate(request, RequestOptions.DEFAULT); // <1>
             // end::simulate-pipeline-execute
 
             // tag::simulate-pipeline-response
@@ -371,7 +371,7 @@ public class IngestClientDocumentationIT extends ESRestHighLevelClientTestCase {
             listener = new LatchedActionListener<>(listener, latch);
 
             // tag::simulate-pipeline-execute-async
-            client.ingest().simulateAsync(request, RequestOptions.DEFAULT, listener); // <1>
+            ingestClient().simulateAsync(request, RequestOptions.DEFAULT, listener); // <1>
             // end::simulate-pipeline-execute-async
 
             assertTrue(latch.await(30L, TimeUnit.SECONDS));

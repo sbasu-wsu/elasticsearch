@@ -26,12 +26,12 @@ import static java.util.Collections.emptySet;
  * <p>
  * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/tasks.html">Task Management API on elastic.co</a>
  */
-public final class TasksClient {
-    private final RestHighLevelClient restHighLevelClient;
-
-    TasksClient(RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = restHighLevelClient;
-    }
+public final class TasksClient extends RestHighLevelClient {
+//    private final RestHighLevelClient restHighLevelClient;
+//
+//    TasksClient(RestHighLevelClient restHighLevelClient) {
+//        this.restHighLevelClient = restHighLevelClient;
+//    }
 
     /**
      * Get current tasks using the Task Management API.
@@ -43,7 +43,7 @@ public final class TasksClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public ListTasksResponse list(ListTasksRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, TasksRequestConverters::listTasks, options,
+        return performRequestAndParseEntity(request, TasksRequestConverters::listTasks, options,
                 ListTasksResponse::fromXContent, emptySet());
     }
 
@@ -57,7 +57,7 @@ public final class TasksClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable listAsync(ListTasksRequest request, RequestOptions options, ActionListener<ListTasksResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, TasksRequestConverters::listTasks, options,
+        return performRequestAsyncAndParseEntity(request, TasksRequestConverters::listTasks, options,
                 ListTasksResponse::fromXContent, listener, emptySet());
     }
 
@@ -71,7 +71,7 @@ public final class TasksClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public Optional<GetTaskResponse> get(GetTaskRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseOptionalEntity(request, TasksRequestConverters::getTask, options,
+        return performRequestAndParseOptionalEntity(request, TasksRequestConverters::getTask, options,
                 GetTaskResponse::fromXContent);
     }
 
@@ -87,7 +87,7 @@ public final class TasksClient {
     public Cancellable getAsync(GetTaskRequest request, RequestOptions options,
                                 ActionListener<Optional<GetTaskResponse>> listener) {
 
-        return restHighLevelClient.performRequestAsyncAndParseOptionalEntity(request, TasksRequestConverters::getTask, options,
+        return performRequestAsyncAndParseOptionalEntity(request, TasksRequestConverters::getTask, options,
                 GetTaskResponse::fromXContent, listener);
     }
 
@@ -103,7 +103,7 @@ public final class TasksClient {
      *
      */
     public CancelTasksResponse cancel(CancelTasksRequest cancelTasksRequest, RequestOptions options ) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
             cancelTasksRequest,
             TasksRequestConverters::cancelTasks,
             options,
@@ -124,7 +124,7 @@ public final class TasksClient {
      */
     public Cancellable cancelAsync(CancelTasksRequest cancelTasksRequest, RequestOptions options,
                                    ActionListener<CancelTasksResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
             cancelTasksRequest,
             TasksRequestConverters::cancelTasks,
             options,
