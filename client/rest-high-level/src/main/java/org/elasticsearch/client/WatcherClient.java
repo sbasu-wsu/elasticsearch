@@ -33,13 +33,13 @@ import java.io.IOException;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 
-public final class WatcherClient {
+public final class WatcherClient extends RestHighLevelClient{
 
-    private final RestHighLevelClient restHighLevelClient;
-
-    WatcherClient(RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = restHighLevelClient;
-    }
+//    private final RestHighLevelClient restHighLevelClient;
+//
+//    WatcherClient(RestHighLevelClient restHighLevelClient) {
+//        this.restHighLevelClient = restHighLevelClient;
+//    }
 
     /**
      * Start the watch service
@@ -51,7 +51,7 @@ public final class WatcherClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public AcknowledgedResponse startWatchService(StartWatchServiceRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
                 request, WatcherRequestConverters::startWatchService, options, AcknowledgedResponse::fromXContent, emptySet());
     }
 
@@ -64,7 +64,7 @@ public final class WatcherClient {
      */
     public Cancellable startWatchServiceAsync(StartWatchServiceRequest request, RequestOptions options,
                                               ActionListener<AcknowledgedResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
                 request, WatcherRequestConverters::startWatchService, options, AcknowledgedResponse::fromXContent, listener, emptySet());
     }
 
@@ -78,7 +78,7 @@ public final class WatcherClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public AcknowledgedResponse stopWatchService(StopWatchServiceRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(
+        return performRequestAndParseEntity(
                 request, WatcherRequestConverters::stopWatchService, options, AcknowledgedResponse::fromXContent, emptySet());
     }
 
@@ -92,7 +92,7 @@ public final class WatcherClient {
      */
     public Cancellable stopWatchServiceAsync(StopWatchServiceRequest request, RequestOptions options,
                                              ActionListener<AcknowledgedResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(
+        return performRequestAsyncAndParseEntity(
                 request, WatcherRequestConverters::stopWatchService, options, AcknowledgedResponse::fromXContent, listener, emptySet());
     }
 
@@ -106,7 +106,7 @@ public final class WatcherClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public PutWatchResponse putWatch(PutWatchRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, WatcherRequestConverters::putWatch, options,
+        return performRequestAndParseEntity(request, WatcherRequestConverters::putWatch, options,
             PutWatchResponse::fromXContent, emptySet());
     }
 
@@ -121,7 +121,7 @@ public final class WatcherClient {
      */
     public Cancellable putWatchAsync(PutWatchRequest request, RequestOptions options,
                                      ActionListener<PutWatchResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, WatcherRequestConverters::putWatch, options,
+        return performRequestAsyncAndParseEntity(request, WatcherRequestConverters::putWatch, options,
             PutWatchResponse::fromXContent, listener, emptySet());
     }
 
@@ -135,7 +135,7 @@ public final class WatcherClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetWatchResponse getWatch(GetWatchRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, WatcherRequestConverters::getWatch, options,
+        return performRequestAndParseEntity(request, WatcherRequestConverters::getWatch, options,
             GetWatchResponse::fromXContent, emptySet());
     }
 
@@ -150,7 +150,7 @@ public final class WatcherClient {
      */
     public Cancellable getWatchAsync(GetWatchRequest request, RequestOptions options,
                                      ActionListener<GetWatchResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, WatcherRequestConverters::getWatch, options,
+        return performRequestAsyncAndParseEntity(request, WatcherRequestConverters::getWatch, options,
             GetWatchResponse::fromXContent, listener, emptySet());
     }
 
@@ -164,7 +164,7 @@ public final class WatcherClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public DeactivateWatchResponse deactivateWatch(DeactivateWatchRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, WatcherRequestConverters::deactivateWatch, options,
+        return performRequestAndParseEntity(request, WatcherRequestConverters::deactivateWatch, options,
             DeactivateWatchResponse::fromXContent, emptySet());
     }
 
@@ -180,7 +180,7 @@ public final class WatcherClient {
      */
     public Cancellable deactivateWatchAsync(DeactivateWatchRequest request, RequestOptions options,
                                             ActionListener<DeactivateWatchResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, WatcherRequestConverters::deactivateWatch, options,
+        return performRequestAsyncAndParseEntity(request, WatcherRequestConverters::deactivateWatch, options,
             DeactivateWatchResponse::fromXContent, listener, emptySet());
     }
 
@@ -194,7 +194,7 @@ public final class WatcherClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public DeleteWatchResponse deleteWatch(DeleteWatchRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, WatcherRequestConverters::deleteWatch, options,
+        return performRequestAndParseEntity(request, WatcherRequestConverters::deleteWatch, options,
             DeleteWatchResponse::fromXContent, singleton(404));
     }
 
@@ -208,7 +208,7 @@ public final class WatcherClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable deleteWatchAsync(DeleteWatchRequest request, RequestOptions options, ActionListener<DeleteWatchResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, WatcherRequestConverters::deleteWatch, options,
+        return performRequestAsyncAndParseEntity(request, WatcherRequestConverters::deleteWatch, options,
             DeleteWatchResponse::fromXContent, listener, singleton(404));
     }
 
@@ -222,7 +222,7 @@ public final class WatcherClient {
      * @throws IOException if there is a problem sending the request or parsing back the response
      */
     public AckWatchResponse ackWatch(AckWatchRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, WatcherRequestConverters::ackWatch, options,
+        return performRequestAndParseEntity(request, WatcherRequestConverters::ackWatch, options,
             AckWatchResponse::fromXContent, emptySet());
     }
 
@@ -236,7 +236,7 @@ public final class WatcherClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable ackWatchAsync(AckWatchRequest request, RequestOptions options, ActionListener<AckWatchResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, WatcherRequestConverters::ackWatch, options,
+        return performRequestAsyncAndParseEntity(request, WatcherRequestConverters::ackWatch, options,
             AckWatchResponse::fromXContent, listener, emptySet());
     }
 
@@ -250,7 +250,7 @@ public final class WatcherClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public ActivateWatchResponse activateWatch(ActivateWatchRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, WatcherRequestConverters::activateWatch, options,
+        return performRequestAndParseEntity(request, WatcherRequestConverters::activateWatch, options,
             ActivateWatchResponse::fromXContent, singleton(404));
     }
 
@@ -265,7 +265,7 @@ public final class WatcherClient {
      */
     public Cancellable activateWatchAsync(ActivateWatchRequest request, RequestOptions options,
                                           ActionListener<ActivateWatchResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, WatcherRequestConverters::activateWatch, options,
+        return performRequestAsyncAndParseEntity(request, WatcherRequestConverters::activateWatch, options,
             ActivateWatchResponse::fromXContent, listener, singleton(404));
     }
 
@@ -279,7 +279,7 @@ public final class WatcherClient {
      * @throws IOException if there is a problem sending the request or parsing the response
      */
     public ExecuteWatchResponse executeWatch(ExecuteWatchRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, WatcherRequestConverters::executeWatch, options,
+        return performRequestAndParseEntity(request, WatcherRequestConverters::executeWatch, options,
             ExecuteWatchResponse::fromXContent, emptySet());
     }
 
@@ -294,7 +294,7 @@ public final class WatcherClient {
      */
     public Cancellable executeWatchAsync(ExecuteWatchRequest request, RequestOptions options,
                                          ActionListener<ExecuteWatchResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, WatcherRequestConverters::executeWatch, options,
+        return performRequestAsyncAndParseEntity(request, WatcherRequestConverters::executeWatch, options,
             ExecuteWatchResponse::fromXContent, listener, emptySet());
     }
 
@@ -308,7 +308,7 @@ public final class WatcherClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public WatcherStatsResponse watcherStats(WatcherStatsRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, WatcherRequestConverters::watcherStats, options,
+        return performRequestAndParseEntity(request, WatcherRequestConverters::watcherStats, options,
             WatcherStatsResponse::fromXContent, emptySet());
     }
 
@@ -323,7 +323,7 @@ public final class WatcherClient {
      */
     public Cancellable watcherStatsAsync(WatcherStatsRequest request, RequestOptions options,
                                          ActionListener<WatcherStatsResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, WatcherRequestConverters::watcherStats, options,
+        return performRequestAsyncAndParseEntity(request, WatcherRequestConverters::watcherStats, options,
             WatcherStatsResponse::fromXContent, listener, emptySet());
     }
 

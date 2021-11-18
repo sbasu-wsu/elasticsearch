@@ -21,13 +21,7 @@ import org.elasticsearch.client.textstructure.FindStructureResponse;
  * See the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/find-structure.html">
  * X-Pack Text Structure APIs </a> for additional information.
  */
-public final class TextStructureClient {
-
-    private final RestHighLevelClient restHighLevelClient;
-
-    TextStructureClient(RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = restHighLevelClient;
-    }
+public final class TextStructureClient extends RestHighLevelClient{
 
     /**
      * Finds the structure of a file
@@ -42,7 +36,7 @@ public final class TextStructureClient {
      * @throws IOException when there is a serialization issue sending the request or receiving the response
      */
     public FindStructureResponse findStructure(FindStructureRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request,
+        return performRequestAndParseEntity(request,
             TextStructureRequestConverters::findFileStructure,
             options,
             FindStructureResponse::fromXContent,
@@ -63,7 +57,7 @@ public final class TextStructureClient {
      */
     public Cancellable findStructureAsync(FindStructureRequest request, RequestOptions options,
                                           ActionListener<FindStructureResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request,
+        return performRequestAsyncAndParseEntity(request,
             TextStructureRequestConverters::findFileStructure,
             options,
             FindStructureResponse::fromXContent,

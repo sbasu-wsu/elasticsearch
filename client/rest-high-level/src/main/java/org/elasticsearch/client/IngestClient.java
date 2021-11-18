@@ -28,13 +28,13 @@ import static java.util.Collections.emptySet;
  * <p>
  * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html">Ingest API on elastic.co</a>
  */
-public final class IngestClient {
+public final class IngestClient extends RestHighLevelClient{
 
-    private final RestHighLevelClient restHighLevelClient;
-
-    IngestClient(RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = restHighLevelClient;
-    }
+//    private final RestHighLevelClient restHighLevelClient;
+//
+//    IngestClient(RestHighLevelClient restHighLevelClient) {
+//        this.restHighLevelClient = restHighLevelClient;
+//    }
 
     /**
      * Add a pipeline or update an existing pipeline.
@@ -47,7 +47,7 @@ public final class IngestClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public AcknowledgedResponse putPipeline(PutPipelineRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, IngestRequestConverters::putPipeline, options,
+        return performRequestAndParseEntity(request, IngestRequestConverters::putPipeline, options,
             AcknowledgedResponse::fromXContent, emptySet());
     }
 
@@ -62,7 +62,7 @@ public final class IngestClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable putPipelineAsync(PutPipelineRequest request, RequestOptions options, ActionListener<AcknowledgedResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, IngestRequestConverters::putPipeline, options,
+        return performRequestAsyncAndParseEntity(request, IngestRequestConverters::putPipeline, options,
             AcknowledgedResponse::fromXContent, listener, emptySet());
     }
 
@@ -77,7 +77,7 @@ public final class IngestClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public GetPipelineResponse getPipeline(GetPipelineRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, IngestRequestConverters::getPipeline, options,
+        return performRequestAndParseEntity(request, IngestRequestConverters::getPipeline, options,
             GetPipelineResponse::fromXContent, Collections.singleton(404));
     }
 
@@ -92,7 +92,7 @@ public final class IngestClient {
      * @return cancellable that may be used to cancel the request
      */
     public Cancellable getPipelineAsync(GetPipelineRequest request, RequestOptions options, ActionListener<GetPipelineResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, IngestRequestConverters::getPipeline, options,
+        return performRequestAsyncAndParseEntity(request, IngestRequestConverters::getPipeline, options,
             GetPipelineResponse::fromXContent, listener, Collections.singleton(404));
     }
 
@@ -108,7 +108,7 @@ public final class IngestClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public AcknowledgedResponse deletePipeline(DeletePipelineRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, IngestRequestConverters::deletePipeline, options,
+        return performRequestAndParseEntity(request, IngestRequestConverters::deletePipeline, options,
             AcknowledgedResponse::fromXContent, emptySet());
     }
 
@@ -125,7 +125,7 @@ public final class IngestClient {
      */
     public Cancellable deletePipelineAsync(DeletePipelineRequest request, RequestOptions options,
                                            ActionListener<AcknowledgedResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request,
+        return performRequestAsyncAndParseEntity(request,
             IngestRequestConverters::deletePipeline, options,
             AcknowledgedResponse::fromXContent, listener, emptySet());
     }
@@ -143,7 +143,7 @@ public final class IngestClient {
      * @throws IOException in case there is a problem sending the request or parsing back the response
      */
     public SimulatePipelineResponse simulate(SimulatePipelineRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(request, IngestRequestConverters::simulatePipeline, options,
+        return performRequestAndParseEntity(request, IngestRequestConverters::simulatePipeline, options,
             SimulatePipelineResponse::fromXContent, emptySet());
     }
 
@@ -162,17 +162,17 @@ public final class IngestClient {
     public Cancellable simulateAsync(SimulatePipelineRequest request,
                                      RequestOptions options,
                                      ActionListener<SimulatePipelineResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, IngestRequestConverters::simulatePipeline, options,
+        return performRequestAsyncAndParseEntity(request, IngestRequestConverters::simulatePipeline, options,
             SimulatePipelineResponse::fromXContent, listener, emptySet());
     }
 
     public GeoIpStatsResponse geoIpStats(MainRequest request, RequestOptions options) throws IOException {
-        return restHighLevelClient.performRequestAndParseEntity(new MainRequest(), IngestRequestConverters::geoIpStats, options,
+        return performRequestAndParseEntity(new MainRequest(), IngestRequestConverters::geoIpStats, options,
             GeoIpStatsResponse::fromXContent, emptySet());
     }
 
     public Cancellable geoIpStatsAsync(MainRequest request, RequestOptions options, ActionListener<GeoIpStatsResponse> listener) {
-        return restHighLevelClient.performRequestAsyncAndParseEntity(request, IngestRequestConverters::geoIpStats, options,
+        return performRequestAsyncAndParseEntity(request, IngestRequestConverters::geoIpStats, options,
             GeoIpStatsResponse::fromXContent, listener, emptySet());
     }
 }

@@ -15,6 +15,7 @@ import org.elasticsearch.action.ingest.PutPipelineRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest;
+import org.elasticsearch.client.IngestClient;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -209,7 +210,7 @@ public class TransformIT extends TransformIntegTestCase {
             .setDest(DestConfig.builder().setIndex(dest).setPipeline(pipelineId).build())
             .build();
 
-        try (RestHighLevelClient hlrc = new TestRestHighLevelClient()) {
+        try (RestHighLevelClient hlrc = new IngestClient()) {
             final XContentBuilder pipelineBuilder = jsonBuilder().startObject()
                 .startArray("processors")
                 .startObject()
