@@ -1,0 +1,509 @@
+From 65f39ed758310eed5d1e6e92360f8f5ee8b26a02 Mon Sep 17 00:00:00 2001
+From: Ryan Lodermeier <rlodermeier@gmail.com>
+Date: Sat, 27 Nov 2021 10:36:11 -0800
+Subject: [PATCH] Files updated and created to refactor code and remove
+ anti-patterns suchs as bolb class, long method, and duplicate code
+
+---
+ .../reindex/AbstractAsyncBulkByScrollAction.java   | 74 +++++++++----------
+ .../reindex/remote/RemoteRequestBuilders.java      | 81 +++++++++++++-------
+ .../reindex/remote/RemoteResponseParsers.java      | 74 +------------------
+ .../index/reindex/remote/ThrowableBuilder.java     | 86 ++++++++++++++++++++++
+ .../reindex/remote/RemoteRequestBuildersTests.java |  8 +-
+ 5 files changed, 179 insertions(+), 144 deletions(-)
+ create mode 100644 modules/reindex/src/main/java/org/elasticsearch/index/reindex/remote/ThrowableBuilder.java
+
+diff --git a/modules/reindex/src/main/java/org/elasticsearch/index/reindex/AbstractAsyncBulkByScrollAction.java b/modules/reindex/src/main/java/org/elasticsearch/index/reindex/AbstractAsyncBulkByScrollAction.java
+index 32a95672043..6bfeca75a41 100644
+--- a/modules/reindex/src/main/java/org/elasticsearch/index/reindex/AbstractAsyncBulkByScrollAction.java
++++ b/modules/reindex/src/main/java/org/elasticsearch/index/reindex/AbstractAsyncBulkByScrollAction.java
+@@ -239,11 +239,7 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
+      */
+     public void start() {
+         logger.debug("[{}]: starting", task.getId());
+-        if (task.isCancelled()) {
+-            logger.debug("[{}]: finishing early because the task was cancelled", task.getId());
+-            finishHim(null);
+-            return;
+-        }
++        checkForCancelation();
+         try {
+             startTime.set(System.nanoTime());
+             scrollSource.start();
+@@ -271,19 +267,8 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
+     void onScrollResponse(long lastBatchStartTimeNS, int lastBatchSize, ScrollConsumableHitsResponse asyncResponse) {
+         ScrollableHitSource.Response response = asyncResponse.response();
+         logger.debug("[{}]: got scroll response with [{}] hits", task.getId(), asyncResponse.remainingHits());
+-        if (task.isCancelled()) {
+-            logger.debug("[{}]: finishing early because the task was cancelled", task.getId());
+-            finishHim(null);
+-            return;
+-        }
+-        if (    // If any of the shards failed that should abort the request.
+-                (response.getFailures().size() > 0)
+-                // Timeouts aren't shard failures but we still need to pass them back to the user.
+-                || response.isTimedOut()
+-                ) {
+-            refreshAndFinish(emptyList(), response.getFailures(), response.isTimedOut());
+-            return;
+-        }
++        checkForCancelation();
++        checkForFailures(response);
+         long total = response.getTotalHits();
+         if (mainRequest.getMaxDocs() > 0) {
+             total = min(total, mainRequest.getMaxDocs());
+@@ -307,23 +292,42 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
+         prepareBulkRequestRunnable = (AbstractRunnable) threadPool.getThreadContext().preserveContext(prepareBulkRequestRunnable);
+         worker.delayPrepareBulkRequest(threadPool, lastBatchStartTimeNS, lastBatchSize, prepareBulkRequestRunnable);
+     }
+-
+-    /**
+-     * Prepare the bulk request. Called on the generic thread pool after some preflight checks have been done one the SearchResponse and any
+-     * delay has been slept. Uses the generic thread pool because reindex is rare enough not to need its own thread pool and because the
+-     * thread may be blocked by the user script.
+-     */
+-    void prepareBulkRequest(long thisBatchStartTimeNS, ScrollConsumableHitsResponse asyncResponse) {
+-        logger.debug("[{}]: preparing bulk request", task.getId());
++    
++    private void checkForCancelation() {
+         if (task.isCancelled()) {
+             logger.debug("[{}]: finishing early because the task was cancelled", task.getId());
+             finishHim(null);
+             return;
+         }
++    }
++    
++    private void checkForRemainingHits(ScrollConsumableHitsResponse asyncResponse) {
+         if (asyncResponse.hasRemainingHits() == false) {
+             refreshAndFinish(emptyList(), emptyList(), false);
+             return;
+         }
++    }
++    
++    private void checkForFailures(ScrollableHitSource.Response response) {
++        if (    // If any of the shards failed that should abort the request.
++                (response.getFailures().size() > 0)
++                // Timeouts aren't shard failures but we still need to pass them back to the user.
++                || response.isTimedOut()
++                ) {
++            refreshAndFinish(emptyList(), response.getFailures(), response.isTimedOut());
++            return;
++        }
++    }
++
++    /**
++     * Prepare the bulk request. Called on the generic thread pool after some preflight checks have been done one the SearchResponse and any
++     * delay has been slept. Uses the generic thread pool because reindex is rare enough not to need its own thread pool and because the
++     * thread may be blocked by the user script.
++     */
++    void prepareBulkRequest(long thisBatchStartTimeNS, ScrollConsumableHitsResponse asyncResponse) {
++        logger.debug("[{}]: preparing bulk request", task.getId());
++        checkForCancelation();
++        checkForRemainingHits(asyncResponse);
+         worker.countBatch();
+         final List<? extends ScrollableHitSource.Hit> hits;
+ 
+@@ -358,11 +362,7 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
+             logger.debug("[{}]: sending [{}] entry, [{}] bulk request", task.getId(), requestSize,
+                     new ByteSizeValue(request.estimatedSizeInBytes()));
+         }
+-        if (task.isCancelled()) {
+-            logger.debug("[{}]: finishing early because the task was cancelled", task.getId());
+-            finishHim(null);
+-            return;
+-        }
++        checkForCancelation();
+         bulkRetry.withBackoff(bulkClient::bulk, request, new ActionListener<BulkResponse>() {
+             @Override
+             public void onResponse(BulkResponse response) {
+@@ -409,11 +409,7 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
+                 destinationIndicesThisBatch.add(item.getIndex());
+             }
+ 
+-            if (task.isCancelled()) {
+-                logger.debug("[{}]: Finishing early because the task was cancelled", task.getId());
+-                finishHim(null);
+-                return;
+-            }
++            checkForCancelation();
+ 
+             addDestinationIndices(destinationIndicesThisBatch);
+ 
+@@ -437,11 +433,7 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
+     void notifyDone(long thisBatchStartTimeNS,
+                     ScrollConsumableHitsResponse asyncResponse,
+                     int batchSize) {
+-        if (task.isCancelled()) {
+-            logger.debug("[{}]: finishing early because the task was cancelled", task.getId());
+-            finishHim(null);
+-            return;
+-        }
++        checkForCancelation();
+         this.lastBatchSize = batchSize;
+         this.totalBatchSizeInSingleScrollResponse.addAndGet(batchSize);
+ 
+diff --git a/modules/reindex/src/main/java/org/elasticsearch/index/reindex/remote/RemoteRequestBuilders.java b/modules/reindex/src/main/java/org/elasticsearch/index/reindex/remote/RemoteRequestBuilders.java
+index 860f65fbc34..eeab5e48f72 100644
+--- a/modules/reindex/src/main/java/org/elasticsearch/index/reindex/remote/RemoteRequestBuilders.java
++++ b/modules/reindex/src/main/java/org/elasticsearch/index/reindex/remote/RemoteRequestBuilders.java
+@@ -43,15 +43,10 @@ import static org.elasticsearch.core.TimeValue.timeValueMillis;
+  */
+ final class RemoteRequestBuilders {
+     private RemoteRequestBuilders() {}
+-
+-    static Request initialSearch(SearchRequest searchRequest, BytesReference query, Version remoteVersion) {
+-        // It is nasty to build paths with StringBuilder but we'll be careful....
+-        StringBuilder path = new StringBuilder("/");
+-        addIndices(path, searchRequest.indices());
+-        path.append("_search");
+-        Request request = new Request("POST", path.toString());
+-
+-        if (searchRequest.scroll() != null) {
++    
++    /**Method that allows the addition of scroll parameters to the request*/
++    static void addScrollParameter(Request request, SearchRequest searchRequest, Version remoteVersion) {
++       if (searchRequest.scroll() != null) {
+             TimeValue keepAlive = searchRequest.scroll().keepAlive();
+             // V_5_0_0
+             if (remoteVersion.before(Version.fromId(5000099))) {
+@@ -62,14 +57,19 @@ final class RemoteRequestBuilders {
+             }
+             request.addParameter("scroll", keepAlive.getStringRep());
+         }
+-        request.addParameter("size", Integer.toString(searchRequest.source().size()));
+-
++    }
++    
++    /**Method that allows the addition of version parameters to the request*/
++    static void addVersionParameter(Request request, SearchRequest searchRequest) {
+         if (searchRequest.source().version() == null || searchRequest.source().version() == false) {
+             request.addParameter("version", Boolean.FALSE.toString());
+         } else {
+             request.addParameter("version", Boolean.TRUE.toString());
+         }
+-
++    }
++   
++    /**Method that allows the addition of search/sort parameters to the request*/
++   static void addSearchSortParameter(Request request, SearchRequest searchRequest, Version remoteVersion) {
+         if (searchRequest.source().sorts() != null) {
+             boolean useScan = false;
+             // Detect if we should use search_type=scan rather than a sort
+@@ -94,16 +94,18 @@ final class RemoteRequestBuilders {
+                 request.addParameter("sort", sorts.toString());
+             }
+         }
+-        if (remoteVersion.before(Version.fromId(2000099))) {
+-            // Versions before 2.0.0 need prompting to return interesting fields. Note that timestamp isn't available at all....
+-            searchRequest.source().storedField("_parent").storedField("_routing").storedField("_ttl");
+-            if (remoteVersion.before(Version.fromId(1000099))) {
+-                // Versions before 1.0.0 don't support `"_source": true` so we have to ask for the _source in a funny way.
+-                if (false == searchRequest.source().storedFields().fieldNames().contains("_source")) {
+-                    searchRequest.source().storedField("_source");
+-                }
+-            }
++    }
++    
++   /**Method to add partial search parameters*/ 
++   static void addPartialSearchParameter(Request request, Version remoteVersion) {
++        if (remoteVersion.onOrAfter(Version.fromId(6030099))) {
++            // allow_partial_results introduced in 6.3, running remote reindex against earlier versions still silently discards RED shards.
++            request.addParameter("allow_partial_search_results", "false");
+         }
++    }
++    
++    /**Method to ass stored fields parameters to the request*/
++    static void addStoredFields(Request request, SearchRequest searchRequest, Version remoteVersion) {
+         if (searchRequest.source().storedFields() != null && false == searchRequest.source().storedFields().fieldNames().isEmpty()) {
+             StringBuilder fields = new StringBuilder(searchRequest.source().storedFields().fieldNames().get(0));
+             for (int i = 1; i < searchRequest.source().storedFields().fieldNames().size(); i++) {
+@@ -113,11 +115,40 @@ final class RemoteRequestBuilders {
+             String storedFieldsParamName = remoteVersion.before(Version.fromId(5000099)) ? "fields" : "stored_fields";
+             request.addParameter(storedFieldsParamName, fields.toString());
+         }
+-
+-        if (remoteVersion.onOrAfter(Version.fromId(6030099))) {
+-            // allow_partial_results introduced in 6.3, running remote reindex against earlier versions still silently discards RED shards.
+-            request.addParameter("allow_partial_search_results", "false");
++    }
++    
++    /**Method to add additional fields not identified above to the research request*/
++    static void addFields(SearchRequest searchRequest, Version remoteVersion) {
++        if (remoteVersion.before(Version.fromId(2000099))) {
++            // Versions before 2.0.0 need prompting to return interesting fields. Note that timestamp isn't available at all....
++            searchRequest.source().storedField("_parent").storedField("_routing").storedField("_ttl");
++            if (remoteVersion.before(Version.fromId(1000099))) {
++                // Versions before 1.0.0 don't support `"_source": true` so we have to ask for the _source in a funny way.
++                if (false == searchRequest.source().storedFields().fieldNames().contains("_source")) {
++                    searchRequest.source().storedField("_source");
++                }
++            }
+         }
++    }
++    
++    
++
++    static Request initialSearch(SearchRequest searchRequest, BytesReference query, Version remoteVersion) {
++        // It is nasty to build paths with StringBuilder but we'll be careful....
++        StringBuilder path = new StringBuilder("/");
++        addIndices(path, searchRequest.indices());
++        path.append("_search");
++        Request request = new Request("POST", path.toString());
++
++        addScrollParameter(request, searchRequest, remoteVersion);
++        
++        request.addParameter("size", Integer.toString(searchRequest.source().size()));
++
++        addVersionParameter(request, searchRequest);
++        addSearchSortParameter(request, searchRequest, remoteVersion);     
++        addFields(searchRequest, remoteVersion);
++        addPartialSearchParameter(request, remoteVersion);
++        addStoredFields(request, searchRequest, remoteVersion);
+ 
+         // EMPTY is safe here because we're not calling namedObject
+         try (XContentBuilder entity = JsonXContent.contentBuilder();
+diff --git a/modules/reindex/src/main/java/org/elasticsearch/index/reindex/remote/RemoteResponseParsers.java b/modules/reindex/src/main/java/org/elasticsearch/index/reindex/remote/RemoteResponseParsers.java
+index b9ef0add103..a07f5cfdd8f 100644
+--- a/modules/reindex/src/main/java/org/elasticsearch/index/reindex/remote/RemoteResponseParsers.java
++++ b/modules/reindex/src/main/java/org/elasticsearch/index/reindex/remote/RemoteResponseParsers.java
+@@ -14,12 +14,10 @@ import org.elasticsearch.common.xcontent.ParseField;
+ import org.elasticsearch.common.ParsingException;
+ import org.elasticsearch.common.bytes.BytesReference;
+ import org.elasticsearch.core.Tuple;
+-import org.elasticsearch.common.util.concurrent.EsRejectedExecutionException;
+ import org.elasticsearch.common.xcontent.ConstructingObjectParser;
+ import org.elasticsearch.common.xcontent.ObjectParser;
+ import org.elasticsearch.common.xcontent.ObjectParser.ValueType;
+ import org.elasticsearch.common.xcontent.XContentBuilder;
+-import org.elasticsearch.common.xcontent.XContentLocation;
+ import org.elasticsearch.common.xcontent.XContentParser;
+ import org.elasticsearch.common.xcontent.XContentType;
+ import org.elasticsearch.index.reindex.ScrollableHitSource.BasicHit;
+@@ -27,14 +25,10 @@ import org.elasticsearch.index.reindex.ScrollableHitSource.Hit;
+ import org.elasticsearch.index.reindex.ScrollableHitSource.Response;
+ import org.elasticsearch.index.reindex.ScrollableHitSource.SearchFailure;
+ import org.elasticsearch.search.SearchHits;
+-
+ import java.io.IOException;
+ import java.util.List;
+-import java.util.function.BiFunction;
+-
+ import static java.util.Collections.emptyList;
+ import static java.util.Collections.singletonList;
+-import static java.util.Objects.requireNonNull;
+ import static org.elasticsearch.common.xcontent.ConstructingObjectParser.constructorArg;
+ import static org.elasticsearch.common.xcontent.ConstructingObjectParser.optionalConstructorArg;
+ 
+@@ -79,6 +73,7 @@ final class RemoteResponseParsers {
+         ParseField parentField = new ParseField("_parent");
+         HIT_PARSER.declareString(BasicHit::setRouting, routingField);
+         // Pre-2.0.0 routing come back in "fields"
++        
+         class Fields {
+             String routing;
+         }
+@@ -192,73 +187,6 @@ final class RemoteResponseParsers {
+         RESPONSE_PARSER.declareObject(optionalConstructorArg(), (p, c) -> SHARDS_PARSER.apply(p, null), new ParseField("_shards"));
+     }
+ 
+-    /**
+-     * Collects stuff about Throwables and attempts to rebuild them.
+-     */
+-    public static class ThrowableBuilder {
+-        public static final BiFunction<XContentParser, Void, Throwable> PARSER;
+-        static {
+-            ObjectParser<ThrowableBuilder, Void> parser = new ObjectParser<>("reason", true, ThrowableBuilder::new);
+-            PARSER = parser.andThen(ThrowableBuilder::build);
+-            parser.declareString(ThrowableBuilder::setType, new ParseField("type"));
+-            parser.declareString(ThrowableBuilder::setReason, new ParseField("reason"));
+-            parser.declareObject(ThrowableBuilder::setCausedBy, PARSER::apply, new ParseField("caused_by"));
+-
+-            // So we can give a nice error for parsing exceptions
+-            parser.declareInt(ThrowableBuilder::setLine, new ParseField("line"));
+-            parser.declareInt(ThrowableBuilder::setColumn, new ParseField("col"));
+-        }
+-
+-        private String type;
+-        private String reason;
+-        private Integer line;
+-        private Integer column;
+-        private Throwable causedBy;
+-
+-        public Throwable build() {
+-            Throwable t = buildWithoutCause();
+-            if (causedBy != null) {
+-                t.initCause(causedBy);
+-            }
+-            return t;
+-        }
+-
+-        private Throwable buildWithoutCause() {
+-            requireNonNull(type, "[type] is required");
+-            requireNonNull(reason, "[reason] is required");
+-            switch (type) {
+-            // Make some effort to use the right exceptions
+-            case "es_rejected_execution_exception":
+-                return new EsRejectedExecutionException(reason);
+-            case "parsing_exception":
+-                XContentLocation location = null;
+-                if (line != null && column != null) {
+-                    location = new XContentLocation(line, column);
+-                }
+-                return new ParsingException(location, reason);
+-            // But it isn't worth trying to get it perfect....
+-            default:
+-                return new RuntimeException(type + ": " + reason);
+-            }
+-        }
+-
+-        public void setType(String type) {
+-            this.type = type;
+-        }
+-        public void setReason(String reason) {
+-            this.reason = reason;
+-        }
+-        public void setLine(Integer line) {
+-            this.line = line;
+-        }
+-        public void setColumn(Integer column) {
+-            this.column = column;
+-        }
+-        public void setCausedBy(Throwable causedBy) {
+-            this.causedBy = causedBy;
+-        }
+-    }
+-
+     /**
+      * Parses the main action to return just the {@linkplain Version} that it returns. We throw everything else out.
+      */
+diff --git a/modules/reindex/src/main/java/org/elasticsearch/index/reindex/remote/ThrowableBuilder.java b/modules/reindex/src/main/java/org/elasticsearch/index/reindex/remote/ThrowableBuilder.java
+new file mode 100644
+index 00000000000..3f6eb99acde
+--- /dev/null
++++ b/modules/reindex/src/main/java/org/elasticsearch/index/reindex/remote/ThrowableBuilder.java
+@@ -0,0 +1,86 @@
++/*
++ * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
++ * or more contributor license agreements. Licensed under the Elastic License
++ * 2.0 and the Server Side Public License, v 1; you may not use this file except
++ * in compliance with, at your election, the Elastic License 2.0 or the Server
++ * Side Public License, v 1.
++ */
++
++package org.elasticsearch.index.reindex.remote;
++
++import org.elasticsearch.common.xcontent.ParseField;
++import org.elasticsearch.common.ParsingException;
++import org.elasticsearch.common.util.concurrent.EsRejectedExecutionException;
++import org.elasticsearch.common.xcontent.ObjectParser;
++import org.elasticsearch.common.xcontent.XContentLocation;
++import org.elasticsearch.common.xcontent.XContentParser;
++import java.util.function.BiFunction;
++import static java.util.Objects.requireNonNull;
++
++
++/**
++ * Collects stuff about Throwables and attempts to rebuild them.
++ */
++public class ThrowableBuilder {
++    public static final BiFunction<XContentParser, Void, Throwable> PARSER;
++    static {
++        ObjectParser<ThrowableBuilder, Void> parser = new ObjectParser<>("reason", true, ThrowableBuilder::new);
++        PARSER = parser.andThen(ThrowableBuilder::build);
++        parser.declareString(ThrowableBuilder::setType, new ParseField("type"));
++        parser.declareString(ThrowableBuilder::setReason, new ParseField("reason"));
++        parser.declareObject(ThrowableBuilder::setCausedBy, PARSER::apply, new ParseField("caused_by"));
++
++        // So we can give a nice error for parsing exceptions
++        parser.declareInt(ThrowableBuilder::setLine, new ParseField("line"));
++        parser.declareInt(ThrowableBuilder::setColumn, new ParseField("col"));
++    }
++
++    private String type;
++    private String reason;
++    private Integer line;
++    private Integer column;
++    private Throwable causedBy;
++
++    public Throwable build() {
++        Throwable t = buildWithoutCause();
++        if (causedBy != null) {
++            t.initCause(causedBy);
++        }
++        return t;
++    }
++
++    private Throwable buildWithoutCause() {
++        requireNonNull(type, "[type] is required");
++        requireNonNull(reason, "[reason] is required");
++        switch (type) {
++        // Make some effort to use the right exceptions
++        case "es_rejected_execution_exception":
++            return new EsRejectedExecutionException(reason);
++        case "parsing_exception":
++            XContentLocation location = null;
++            if (line != null && column != null) {
++                location = new XContentLocation(line, column);
++            }
++            return new ParsingException(location, reason);
++        // But it isn't worth trying to get it perfect....
++        default:
++            return new RuntimeException(type + ": " + reason);
++        }
++    }
++
++    public void setType(String type) {
++        this.type = type;
++    }
++    public void setReason(String reason) {
++        this.reason = reason;
++    }
++    public void setLine(Integer line) {
++        this.line = line;
++    }
++    public void setColumn(Integer column) {
++        this.column = column;
++    }
++    public void setCausedBy(Throwable causedBy) {
++        this.causedBy = causedBy;
++    }
++}
+diff --git a/modules/reindex/src/test/java/org/elasticsearch/index/reindex/remote/RemoteRequestBuildersTests.java b/modules/reindex/src/test/java/org/elasticsearch/index/reindex/remote/RemoteRequestBuildersTests.java
+index 7b9bf54dfef..ce88b1f46ea 100644
+--- a/modules/reindex/src/test/java/org/elasticsearch/index/reindex/remote/RemoteRequestBuildersTests.java
++++ b/modules/reindex/src/test/java/org/elasticsearch/index/reindex/remote/RemoteRequestBuildersTests.java
+@@ -105,28 +105,26 @@ public class RemoteRequestBuildersTests extends ESTestCase {
+         assertThat(initialSearch(searchRequest, query, remoteVersion).getParameters(),
+             not(either(hasKey("stored_fields")).or(hasKey("fields"))));
+ 
+-        // Test stored_fields for versions that support it
+         searchRequest = new SearchRequest().source(new SearchSourceBuilder());
+         searchRequest.source().storedField("_source").storedField("_id");
+         // V_5_0_0 (final) => current
+         int minStoredFieldsVersion = 5000099;
+         remoteVersion = Version.fromId(randomBoolean() ? minStoredFieldsVersion : between(minStoredFieldsVersion, Version.CURRENT.id));
+         assertThat(initialSearch(searchRequest, query, remoteVersion).getParameters(), hasEntry("stored_fields", "_source,_id"));
+-
++        
+         // Test fields for versions that support it
+         searchRequest = new SearchRequest().source(new SearchSourceBuilder());
+         searchRequest.source().storedField("_source").storedField("_id");
+         // V_2_0_0 => V_5_0_0_alpha3
+         remoteVersion = Version.fromId(randomBoolean() ? minStoredFieldsVersion - 1 : between(2000099, minStoredFieldsVersion - 1));
+         assertThat(initialSearch(searchRequest, query, remoteVersion).getParameters(), hasEntry("fields", "_source,_id"));
+-
+-        // Test extra fields for versions that need it
++        
+         searchRequest = new SearchRequest().source(new SearchSourceBuilder());
+         searchRequest.source().storedField("_source").storedField("_id");
+         remoteVersion = Version.fromId(between(0, 2000099 - 1));
+         assertThat(initialSearch(searchRequest, query, remoteVersion).getParameters(),
+             hasEntry("fields", "_source,_id,_parent,_routing,_ttl"));
+-
++        
+         // But only versions before 1.0 force _source to be in the list
+         searchRequest = new SearchRequest().source(new SearchSourceBuilder());
+         searchRequest.source().storedField("_id");
+-- 
+2.15.0
+

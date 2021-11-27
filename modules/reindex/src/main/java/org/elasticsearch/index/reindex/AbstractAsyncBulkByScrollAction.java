@@ -239,11 +239,7 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
      */
     public void start() {
         logger.debug("[{}]: starting", task.getId());
-        if (task.isCancelled()) {
-            logger.debug("[{}]: finishing early because the task was cancelled", task.getId());
-            finishHim(null);
-            return;
-        }
+        checkForCancelation();
         try {
             startTime.set(System.nanoTime());
             scrollSource.start();
@@ -271,19 +267,8 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
     void onScrollResponse(long lastBatchStartTimeNS, int lastBatchSize, ScrollConsumableHitsResponse asyncResponse) {
         ScrollableHitSource.Response response = asyncResponse.response();
         logger.debug("[{}]: got scroll response with [{}] hits", task.getId(), asyncResponse.remainingHits());
-        if (task.isCancelled()) {
-            logger.debug("[{}]: finishing early because the task was cancelled", task.getId());
-            finishHim(null);
-            return;
-        }
-        if (    // If any of the shards failed that should abort the request.
-                (response.getFailures().size() > 0)
-                // Timeouts aren't shard failures but we still need to pass them back to the user.
-                || response.isTimedOut()
-                ) {
-            refreshAndFinish(emptyList(), response.getFailures(), response.isTimedOut());
-            return;
-        }
+        checkForCancelation();
+        checkForFailures(response);
         long total = response.getTotalHits();
         if (mainRequest.getMaxDocs() > 0) {
             total = min(total, mainRequest.getMaxDocs());
@@ -307,6 +292,32 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
         prepareBulkRequestRunnable = (AbstractRunnable) threadPool.getThreadContext().preserveContext(prepareBulkRequestRunnable);
         worker.delayPrepareBulkRequest(threadPool, lastBatchStartTimeNS, lastBatchSize, prepareBulkRequestRunnable);
     }
+    
+    private void checkForCancelation() {
+        if (task.isCancelled()) {
+            logger.debug("[{}]: finishing early because the task was cancelled", task.getId());
+            finishHim(null);
+            return;
+        }
+    }
+    
+    private void checkForRemainingHits(ScrollConsumableHitsResponse asyncResponse) {
+        if (asyncResponse.hasRemainingHits() == false) {
+            refreshAndFinish(emptyList(), emptyList(), false);
+            return;
+        }
+    }
+    
+    private void checkForFailures(ScrollableHitSource.Response response) {
+        if (    // If any of the shards failed that should abort the request.
+                (response.getFailures().size() > 0)
+                // Timeouts aren't shard failures but we still need to pass them back to the user.
+                || response.isTimedOut()
+                ) {
+            refreshAndFinish(emptyList(), response.getFailures(), response.isTimedOut());
+            return;
+        }
+    }
 
     /**
      * Prepare the bulk request. Called on the generic thread pool after some preflight checks have been done one the SearchResponse and any
@@ -315,15 +326,8 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
      */
     void prepareBulkRequest(long thisBatchStartTimeNS, ScrollConsumableHitsResponse asyncResponse) {
         logger.debug("[{}]: preparing bulk request", task.getId());
-        if (task.isCancelled()) {
-            logger.debug("[{}]: finishing early because the task was cancelled", task.getId());
-            finishHim(null);
-            return;
-        }
-        if (asyncResponse.hasRemainingHits() == false) {
-            refreshAndFinish(emptyList(), emptyList(), false);
-            return;
-        }
+        checkForCancelation();
+        checkForRemainingHits(asyncResponse);
         worker.countBatch();
         final List<? extends ScrollableHitSource.Hit> hits;
 
@@ -358,11 +362,7 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
             logger.debug("[{}]: sending [{}] entry, [{}] bulk request", task.getId(), requestSize,
                     new ByteSizeValue(request.estimatedSizeInBytes()));
         }
-        if (task.isCancelled()) {
-            logger.debug("[{}]: finishing early because the task was cancelled", task.getId());
-            finishHim(null);
-            return;
-        }
+        checkForCancelation();
         bulkRetry.withBackoff(bulkClient::bulk, request, new ActionListener<BulkResponse>() {
             @Override
             public void onResponse(BulkResponse response) {
@@ -409,11 +409,7 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
                 destinationIndicesThisBatch.add(item.getIndex());
             }
 
-            if (task.isCancelled()) {
-                logger.debug("[{}]: Finishing early because the task was cancelled", task.getId());
-                finishHim(null);
-                return;
-            }
+            checkForCancelation();
 
             addDestinationIndices(destinationIndicesThisBatch);
 
@@ -437,11 +433,7 @@ public abstract class AbstractAsyncBulkByScrollAction<Request extends AbstractBu
     void notifyDone(long thisBatchStartTimeNS,
                     ScrollConsumableHitsResponse asyncResponse,
                     int batchSize) {
-        if (task.isCancelled()) {
-            logger.debug("[{}]: finishing early because the task was cancelled", task.getId());
-            finishHim(null);
-            return;
-        }
+        checkForCancelation();
         this.lastBatchSize = batchSize;
         this.totalBatchSizeInSingleScrollResponse.addAndGet(batchSize);
 

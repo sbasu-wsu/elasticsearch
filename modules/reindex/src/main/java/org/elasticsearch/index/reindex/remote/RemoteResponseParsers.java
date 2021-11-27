@@ -14,12 +14,10 @@ import org.elasticsearch.common.xcontent.ParseField;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.core.Tuple;
-import org.elasticsearch.common.util.concurrent.EsRejectedExecutionException;
 import org.elasticsearch.common.xcontent.ConstructingObjectParser;
 import org.elasticsearch.common.xcontent.ObjectParser;
 import org.elasticsearch.common.xcontent.ObjectParser.ValueType;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentLocation;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.reindex.ScrollableHitSource.BasicHit;
@@ -27,14 +25,10 @@ import org.elasticsearch.index.reindex.ScrollableHitSource.Hit;
 import org.elasticsearch.index.reindex.ScrollableHitSource.Response;
 import org.elasticsearch.index.reindex.ScrollableHitSource.SearchFailure;
 import org.elasticsearch.search.SearchHits;
-
 import java.io.IOException;
 import java.util.List;
-import java.util.function.BiFunction;
-
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.Objects.requireNonNull;
 import static org.elasticsearch.common.xcontent.ConstructingObjectParser.constructorArg;
 import static org.elasticsearch.common.xcontent.ConstructingObjectParser.optionalConstructorArg;
 
@@ -79,6 +73,7 @@ final class RemoteResponseParsers {
         ParseField parentField = new ParseField("_parent");
         HIT_PARSER.declareString(BasicHit::setRouting, routingField);
         // Pre-2.0.0 routing come back in "fields"
+        
         class Fields {
             String routing;
         }
@@ -190,73 +185,6 @@ final class RemoteResponseParsers {
         RESPONSE_PARSER.declareString(optionalConstructorArg(), new ParseField("_scroll_id"));
         RESPONSE_PARSER.declareObject(optionalConstructorArg(), HITS_PARSER, new ParseField("hits"));
         RESPONSE_PARSER.declareObject(optionalConstructorArg(), (p, c) -> SHARDS_PARSER.apply(p, null), new ParseField("_shards"));
-    }
-
-    /**
-     * Collects stuff about Throwables and attempts to rebuild them.
-     */
-    public static class ThrowableBuilder {
-        public static final BiFunction<XContentParser, Void, Throwable> PARSER;
-        static {
-            ObjectParser<ThrowableBuilder, Void> parser = new ObjectParser<>("reason", true, ThrowableBuilder::new);
-            PARSER = parser.andThen(ThrowableBuilder::build);
-            parser.declareString(ThrowableBuilder::setType, new ParseField("type"));
-            parser.declareString(ThrowableBuilder::setReason, new ParseField("reason"));
-            parser.declareObject(ThrowableBuilder::setCausedBy, PARSER::apply, new ParseField("caused_by"));
-
-            // So we can give a nice error for parsing exceptions
-            parser.declareInt(ThrowableBuilder::setLine, new ParseField("line"));
-            parser.declareInt(ThrowableBuilder::setColumn, new ParseField("col"));
-        }
-
-        private String type;
-        private String reason;
-        private Integer line;
-        private Integer column;
-        private Throwable causedBy;
-
-        public Throwable build() {
-            Throwable t = buildWithoutCause();
-            if (causedBy != null) {
-                t.initCause(causedBy);
-            }
-            return t;
-        }
-
-        private Throwable buildWithoutCause() {
-            requireNonNull(type, "[type] is required");
-            requireNonNull(reason, "[reason] is required");
-            switch (type) {
-            // Make some effort to use the right exceptions
-            case "es_rejected_execution_exception":
-                return new EsRejectedExecutionException(reason);
-            case "parsing_exception":
-                XContentLocation location = null;
-                if (line != null && column != null) {
-                    location = new XContentLocation(line, column);
-                }
-                return new ParsingException(location, reason);
-            // But it isn't worth trying to get it perfect....
-            default:
-                return new RuntimeException(type + ": " + reason);
-            }
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-        public void setReason(String reason) {
-            this.reason = reason;
-        }
-        public void setLine(Integer line) {
-            this.line = line;
-        }
-        public void setColumn(Integer column) {
-            this.column = column;
-        }
-        public void setCausedBy(Throwable causedBy) {
-            this.causedBy = causedBy;
-        }
     }
 
     /**

@@ -105,28 +105,26 @@ public class RemoteRequestBuildersTests extends ESTestCase {
         assertThat(initialSearch(searchRequest, query, remoteVersion).getParameters(),
             not(either(hasKey("stored_fields")).or(hasKey("fields"))));
 
-        // Test stored_fields for versions that support it
         searchRequest = new SearchRequest().source(new SearchSourceBuilder());
         searchRequest.source().storedField("_source").storedField("_id");
         // V_5_0_0 (final) => current
         int minStoredFieldsVersion = 5000099;
         remoteVersion = Version.fromId(randomBoolean() ? minStoredFieldsVersion : between(minStoredFieldsVersion, Version.CURRENT.id));
         assertThat(initialSearch(searchRequest, query, remoteVersion).getParameters(), hasEntry("stored_fields", "_source,_id"));
-
+        
         // Test fields for versions that support it
         searchRequest = new SearchRequest().source(new SearchSourceBuilder());
         searchRequest.source().storedField("_source").storedField("_id");
         // V_2_0_0 => V_5_0_0_alpha3
         remoteVersion = Version.fromId(randomBoolean() ? minStoredFieldsVersion - 1 : between(2000099, minStoredFieldsVersion - 1));
         assertThat(initialSearch(searchRequest, query, remoteVersion).getParameters(), hasEntry("fields", "_source,_id"));
-
-        // Test extra fields for versions that need it
+        
         searchRequest = new SearchRequest().source(new SearchSourceBuilder());
         searchRequest.source().storedField("_source").storedField("_id");
         remoteVersion = Version.fromId(between(0, 2000099 - 1));
         assertThat(initialSearch(searchRequest, query, remoteVersion).getParameters(),
             hasEntry("fields", "_source,_id,_parent,_routing,_ttl"));
-
+        
         // But only versions before 1.0 force _source to be in the list
         searchRequest = new SearchRequest().source(new SearchSourceBuilder());
         searchRequest.source().storedField("_id");

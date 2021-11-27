@@ -43,15 +43,10 @@ import static org.elasticsearch.core.TimeValue.timeValueMillis;
  */
 final class RemoteRequestBuilders {
     private RemoteRequestBuilders() {}
-
-    static Request initialSearch(SearchRequest searchRequest, BytesReference query, Version remoteVersion) {
-        // It is nasty to build paths with StringBuilder but we'll be careful....
-        StringBuilder path = new StringBuilder("/");
-        addIndices(path, searchRequest.indices());
-        path.append("_search");
-        Request request = new Request("POST", path.toString());
-
-        if (searchRequest.scroll() != null) {
+    
+    /**Method that allows the addition of scroll parameters to the request*/
+    static void addScrollParameter(Request request, SearchRequest searchRequest, Version remoteVersion) {
+       if (searchRequest.scroll() != null) {
             TimeValue keepAlive = searchRequest.scroll().keepAlive();
             // V_5_0_0
             if (remoteVersion.before(Version.fromId(5000099))) {
@@ -62,14 +57,19 @@ final class RemoteRequestBuilders {
             }
             request.addParameter("scroll", keepAlive.getStringRep());
         }
-        request.addParameter("size", Integer.toString(searchRequest.source().size()));
-
+    }
+    
+    /**Method that allows the addition of version parameters to the request*/
+    static void addVersionParameter(Request request, SearchRequest searchRequest) {
         if (searchRequest.source().version() == null || searchRequest.source().version() == false) {
             request.addParameter("version", Boolean.FALSE.toString());
         } else {
             request.addParameter("version", Boolean.TRUE.toString());
         }
-
+    }
+   
+    /**Method that allows the addition of search/sort parameters to the request*/
+   static void addSearchSortParameter(Request request, SearchRequest searchRequest, Version remoteVersion) {
         if (searchRequest.source().sorts() != null) {
             boolean useScan = false;
             // Detect if we should use search_type=scan rather than a sort
@@ -94,6 +94,31 @@ final class RemoteRequestBuilders {
                 request.addParameter("sort", sorts.toString());
             }
         }
+    }
+    
+   /**Method to add partial search parameters*/ 
+   static void addPartialSearchParameter(Request request, Version remoteVersion) {
+        if (remoteVersion.onOrAfter(Version.fromId(6030099))) {
+            // allow_partial_results introduced in 6.3, running remote reindex against earlier versions still silently discards RED shards.
+            request.addParameter("allow_partial_search_results", "false");
+        }
+    }
+    
+    /**Method to ass stored fields parameters to the request*/
+    static void addStoredFields(Request request, SearchRequest searchRequest, Version remoteVersion) {
+        if (searchRequest.source().storedFields() != null && false == searchRequest.source().storedFields().fieldNames().isEmpty()) {
+            StringBuilder fields = new StringBuilder(searchRequest.source().storedFields().fieldNames().get(0));
+            for (int i = 1; i < searchRequest.source().storedFields().fieldNames().size(); i++) {
+                fields.append(',').append(searchRequest.source().storedFields().fieldNames().get(i));
+            }
+            // V_5_0_0
+            String storedFieldsParamName = remoteVersion.before(Version.fromId(5000099)) ? "fields" : "stored_fields";
+            request.addParameter(storedFieldsParamName, fields.toString());
+        }
+    }
+    
+    /**Method to add additional fields not identified above to the research request*/
+    static void addFields(SearchRequest searchRequest, Version remoteVersion) {
         if (remoteVersion.before(Version.fromId(2000099))) {
             // Versions before 2.0.0 need prompting to return interesting fields. Note that timestamp isn't available at all....
             searchRequest.source().storedField("_parent").storedField("_routing").storedField("_ttl");
@@ -104,20 +129,26 @@ final class RemoteRequestBuilders {
                 }
             }
         }
-        if (searchRequest.source().storedFields() != null && false == searchRequest.source().storedFields().fieldNames().isEmpty()) {
-            StringBuilder fields = new StringBuilder(searchRequest.source().storedFields().fieldNames().get(0));
-            for (int i = 1; i < searchRequest.source().storedFields().fieldNames().size(); i++) {
-                fields.append(',').append(searchRequest.source().storedFields().fieldNames().get(i));
-            }
-            // V_5_0_0
-            String storedFieldsParamName = remoteVersion.before(Version.fromId(5000099)) ? "fields" : "stored_fields";
-            request.addParameter(storedFieldsParamName, fields.toString());
-        }
+    }
+    
+    
 
-        if (remoteVersion.onOrAfter(Version.fromId(6030099))) {
-            // allow_partial_results introduced in 6.3, running remote reindex against earlier versions still silently discards RED shards.
-            request.addParameter("allow_partial_search_results", "false");
-        }
+    static Request initialSearch(SearchRequest searchRequest, BytesReference query, Version remoteVersion) {
+        // It is nasty to build paths with StringBuilder but we'll be careful....
+        StringBuilder path = new StringBuilder("/");
+        addIndices(path, searchRequest.indices());
+        path.append("_search");
+        Request request = new Request("POST", path.toString());
+
+        addScrollParameter(request, searchRequest, remoteVersion);
+        
+        request.addParameter("size", Integer.toString(searchRequest.source().size()));
+
+        addVersionParameter(request, searchRequest);
+        addSearchSortParameter(request, searchRequest, remoteVersion);     
+        addFields(searchRequest, remoteVersion);
+        addPartialSearchParameter(request, remoteVersion);
+        addStoredFields(request, searchRequest, remoteVersion);
 
         // EMPTY is safe here because we're not calling namedObject
         try (XContentBuilder entity = JsonXContent.contentBuilder();
