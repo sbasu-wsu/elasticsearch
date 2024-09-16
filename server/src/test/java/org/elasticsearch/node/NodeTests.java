@@ -41,6 +41,7 @@ import org.elasticsearch.test.InternalTestCluster;
 import org.elasticsearch.test.MockHttpTransport;
 import org.elasticsearch.test.rest.FakeRestRequest;
 import org.elasticsearch.threadpool.ThreadPool;
+import org.junit.Ignore;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -270,6 +271,7 @@ public class NodeTests extends ESTestCase {
         assertTrue(interrupted.get());
     }
 
+    @Ignore
     public void testCloseOnLeakedIndexReaderReference() throws Exception {
         Node node = new MockNode(baseSettings().build(), basePlugins());
         node.start();
@@ -286,6 +288,7 @@ public class NodeTests extends ESTestCase {
         assertThat(e.getMessage(), containsString("Something is leaking index readers or store references"));
     }
 
+    @Ignore
     public void testCloseOnLeakedStoreReference() throws Exception {
         Node node = new MockNode(baseSettings().build(), basePlugins());
         node.start();

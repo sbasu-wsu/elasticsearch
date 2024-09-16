@@ -214,8 +214,8 @@ final class FetchSearchPhase extends SearchPhase {
                                  AtomicArray<SearchPhaseResult> queryPhaseResults,
                                  SearchPhaseController.ReducedQueryPhase reducedQueryPhase,
                                  AtomicArray<? extends SearchPhaseResult> fetchResultsArr) {
-        final InternalSearchResponse internalResponse = searchPhaseController.merge(context.getRequest().scroll() != null,
-            reducedQueryPhase, fetchResultsArr.asList(), fetchResultsArr::get);
+        final InternalSearchResponse internalResponse = reducedQueryPhase.merge(context.getRequest().scroll() != null,
+            fetchResultsArr.asList(), fetchResultsArr::get);
         context.executeNextPhase(this, nextPhaseFactory.apply(internalResponse, queryPhaseResults));
     }
 }
